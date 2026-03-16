@@ -20,6 +20,73 @@ class AppIcons {
   static const String _basePath = 'assets/icons/';
   
   // ═══════════════════════════════════════════════════════════════════════════
+  // APP CORE & UI
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  /// 📊 Dashboard grid icon
+  static const String dashboard = '${_basePath}icon_dashboard.png';
+  
+  /// 👤 User profile silhouette icon
+  static const String profile = '${_basePath}icon_profile.png';
+  
+  /// ⚙️ Settings gear icon
+  static const String settings = '${_basePath}icon_settings.png';
+  
+  /// 📈 Reports bar chart icon
+  static const String reports = '${_basePath}icon_reports.png';
+  
+  /// 🏠 Home house icon
+  static const String home = '${_basePath}icon_home.png';
+  
+  /// ➕ Add plus circle icon
+  static const String add = '${_basePath}icon_add.png';
+  
+  /// ✏️ Edit pencil icon
+  static const String edit = '${_basePath}icon_edit.png';
+  
+  /// 🗑️ Delete trash bin icon
+  static const String delete = '${_basePath}icon_delete.png';
+  
+  /// 🔍 Search magnifying glass icon
+  static const String search = '${_basePath}icon_search.png';
+  
+  /// 🧪 Filter funnel icon
+  static const String filter = '${_basePath}icon_filter.png';
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STATUS & FEEDBACK
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  /// ✅ Success checkmark icon
+  static const String success = '${_basePath}icon_success.png';
+  
+  /// ⚠️ Warning triangle icon
+  static const String warning = '${_basePath}icon_warning.png';
+  
+  /// ❌ Error X icon
+  static const String error = '${_basePath}icon_error.png';
+  
+  /// ℹ️ Information i icon
+  static const String info = '${_basePath}icon_info.png';
+  
+  /// 🔔 Notification bell icon
+  static const String notification = '${_basePath}icon_notification.png';
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BUSINESS & DOCUMENTS
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  /// 📄 Document paper icon
+  static const String document = '${_basePath}icon_document.png';
+  
+  /// 📁 Folder icon
+  static const String folder = '${_basePath}icon_folder.png';
+  
+  /// 💼 App Launcher / Briefcase icon
+  static const String appLauncher = '${_basePath}app_launcher.png';
+
+  
+  // ═══════════════════════════════════════════════════════════════════════════
   // GAMES & ENTERTAINMENT
   // ═══════════════════════════════════════════════════════════════════════════
   
@@ -109,7 +176,26 @@ class AppIcons {
   
   /// Returns a list of all available icon paths
   static List<String> get allIcons => [
+    dashboard,
+    profile,
+    settings,
+    reports,
+    home,
+    add,
+    edit,
+    delete,
+    search,
+    filter,
+    success,
+    warning,
+    error,
+    info,
+    notification,
+    document,
+    folder,
+    appLauncher,
     dice,
+
     joystick,
     puzzle,
     bowling,
@@ -133,6 +219,9 @@ class AppIcons {
   
   /// Returns icons grouped by category
   static Map<String, List<String>> get iconsByCategory => {
+    'App Core & UI': [dashboard, profile, settings, reports, home, add, edit, delete, search, filter],
+    'Status & Feedback': [success, warning, error, info, notification],
+    'Business & Documents': [document, folder, appLauncher],
     'Games & Entertainment': [dice, joystick, puzzle, bowling],
     'Sports': [soccerBall, basketball, tennis, baseballBat],
     'Celebrations & Party': [balloon, fireworks, confetti, gift],
