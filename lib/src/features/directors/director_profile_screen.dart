@@ -6,7 +6,7 @@ import '../../core/models/user.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/repositories/director_repository.dart';
 import '../../core/theme.dart';
-import '../../utils/app_icons.dart';
+import '../../../utils/app_icons.dart';
 
 class DirectorProfileScreen extends StatefulWidget {
   const DirectorProfileScreen({super.key});

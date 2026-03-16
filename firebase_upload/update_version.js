@@ -14,17 +14,17 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 4,
-    changelog: "Stable build: 3D UI icons, Android SDK stability fix (API 34), and premium navigation enhancements.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.3/director_management_arm64_v1.0.3.apk",
+    buildNumber: 5,
+    changelog: "Restricted Director-only profile view with 'Request Detail Change' functionality.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.4/director_management_arm64_v1.0.4.apk",
     isMandatory: true,
-    latestVersion: "1.0.3",
+    latestVersion: "1.0.4",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
   try {
     await db.collection('app_config').doc('version').set(versionData, { merge: true });
-    console.log('✅ Version updated to 1.0.3 successfully!');
+    console.log(`✅ Version updated to ${versionData.latestVersion} successfully!`);
     console.log('New Download URL:', versionData.downloadUrl);
   } catch (error) {
     console.error('❌ Error updating version:', error);
