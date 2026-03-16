@@ -63,6 +63,7 @@ class LocalizationService extends ChangeNotifier {
       'reports': 'Reports',
       'dashboard': 'Dashboard',
       'settings': 'Settings',
+      'profile': 'Profile',
 
       // Settings Screen
       'security': 'SECURITY',
@@ -375,6 +376,7 @@ class LocalizationService extends ChangeNotifier {
       'reports': 'அறிக்கைகள்',
       'dashboard': 'டாஷ்போர்டு',
       'settings': 'அமைப்புகள்',
+      'profile': 'சுயவிவரம்',
 
       // Settings Screen - அமைப்புகள் திரை
       'security': 'பாதுகாப்பு',
