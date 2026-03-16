@@ -14,11 +14,11 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 7,
-    changelog: "Fix: Resolved AppIcons member names and finalized Director profile features v1.0.6.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.6/director_management_arm64_v1.0.6.apk",
+    buildNumber: 8,
+    changelog: "Critical Fix: Resolved OTA update crash by updating FileProvider paths v1.0.7.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.7/director_management_arm64_v1.0.7.apk",
     isMandatory: true,
-    latestVersion: "1.0.6",
+    latestVersion: "1.0.7",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
