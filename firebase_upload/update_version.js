@@ -14,11 +14,11 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 5,
-    changelog: "Restricted Director-only profile view with 'Request Detail Change' functionality.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.4/director_management_arm64_v1.0.4.apk",
+    buildNumber: 7,
+    changelog: "Fix: Resolved AppIcons member names and finalized Director profile features v1.0.6.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.6/director_management_arm64_v1.0.6.apk",
     isMandatory: true,
-    latestVersion: "1.0.4",
+    latestVersion: "1.0.6",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
