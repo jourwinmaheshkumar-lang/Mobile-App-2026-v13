@@ -1,0 +1,32 @@
+[
+    {
+        "S.NO": 1,
+        "DIRECTORS NAMES": "AJITH KUMAR S",
+        "DIN NUMBER": 9855102,
+        "EMAIL ID": "djm.ajithkumar@gmail.com",
+        "IDBI ACCOUNT DETAILS": "Account Number:\n1319104000172172\nCustomer ID:\n90037818",
+        "EMUDRA ACCOUNT DETAILS": "A/c Number\n1993104000042264\nBank Name:\nIDBI Bank\nIFSC CODE Number:\nIBKL0001993\nPlace of Bank (BRANCH):\nBODINAYAKANUR",
+        "Aadhar Address": "38(2),Jameen Thoppu Road, \nBodinayakknur, \nTheni - 625513,\nTamilnadu.",
+        "Residential Address": "38(2),Jameen Thoppu Road, \nBodinayakknur, \nTheni - 625513,\nTamilnadu.",
+        "AADHAR NUMBER": "5565 6631 0349",
+        "PAN NUMBER": "BMNPA7370M",
+        "Bank link Phone number": 9688538884,
+        "Aadhar Pan link Phone number": 6379089025,
+        "Email ID Phone number": 6379089025
+    },
+    {
+        "S.NO": 2,
+        "DIRECTORS NAMES": "AMUTHA S",
+        "DIN NUMBER": 10577350,
+        "EMAIL ID": "djm.amutha@gmail.com",
+        "IDBI ACCOUNT DETAILS": "Account Number:\n1993104000047588\nCustomer ID:\n91393912",
+        "EMUDRA ACCOUNT DETAILS": "Other Bank A/C Number:\n10073171137\nBank Name:\nTAMILNADU GRAMA BANK\nIFSC CODE Number:\nIDIB0PLB001\nPlace of Bank (BRANCH):\nBODINAYAKKANUR",
+        "Aadhar Address": "38(2),Jameen Thoppu Road, \nBodinayakknur, \nTheni - 625513,\nTamilnadu.",
+        "Residential Address": "38(2),Jameen Thoppu Road, \nBodinayakknur, \nTheni - 625513,\nTamilnadu.",
+        "AADHAR NUMBER": "4462 3032 9539",
+        "PAN NUMBER": "EUVPA8967H",
+        "Bank link Phone number": 8508369090,
+        "Aadhar Pan link Phone number": 9976624924,
+        "Email ID Phone number": 8508369090
+    }
+]
