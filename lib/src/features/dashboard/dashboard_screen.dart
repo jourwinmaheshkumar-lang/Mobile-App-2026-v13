@@ -12,6 +12,10 @@ import '../companies/company_list_screen.dart';
 import '../forms/screens/form_list_screen.dart';
 import '../../core/services/notification_service.dart';
 import './notification_list_screen.dart';
+import '../../core/models/activity_log.dart';
+import '../../core/services/activity_log_service.dart';
+import '../../core/utils/company_data.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   final Function(int)? onNavigate;
@@ -90,7 +94,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -100,12 +103,17 @@ class _DashboardScreenState extends State<DashboardScreen>
       stream: AuthService().userStream,
       builder: (context, authSnapshot) {
         final currentUser = authSnapshot.data;
-        final isAdmin = currentUser?.role == UserRole.admin;
+        if (currentUser == null) return const Center(child: CircularProgressIndicator());
+        
+        final isAdmin = currentUser.role == UserRole.admin;
+        final isOffice = currentUser.role == UserRole.officeTeam;
+        final isDirector = currentUser.role == UserRole.director;
 
         return StreamBuilder<List<Director>>(
           stream: repo.directorsStream,
           builder: (context, snapshot) {
             final directors = snapshot.data ?? repo.all;
+            final currentDirector = directors.where((d) => d.id == currentUser.directorId).firstOrNull;
             
             return Container(
               decoration: BoxDecoration(
@@ -141,11 +149,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Metrics Section
-                              _buildMetricsSection(),
-                              
-                              const SizedBox(height: 32),
-                              _buildQuickActionsSection(isAdmin, currentUser),
+                              if (isDirector)
+                                _buildDirectorDashboard(directors, currentDirector, currentUser)
+                              else ...[
+                                _buildBirthdayAlerts(),
+                                const SizedBox(height: 24),
+                                // Metrics Section
+                                _buildMetricsSection(),
+                                
+                                const SizedBox(height: 32),
+                                _buildQuickActionsSection(isAdmin, currentUser),
+                              ],
                               
                               const SizedBox(height: 120),
                             ],
@@ -994,22 +1008,326 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildStatusChip(String label, Color color) {
+  Widget _buildDirectorDashboard(
+    List<Director> allDirectors, 
+    Director? currentDirector, 
+    AppUser currentUser
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Birthday Highlights
+        _buildBirthdayAlerts(),
+        
+        const SizedBox(height: 24),
+        
+        // 1. Company Details Card
+        _buildDirectorCompanyCard(currentDirector),
+        
+        const SizedBox(height: 20),
+        
+        // 2. DJM Form Card
+        _buildDJMFormCard(),
+        
+        const SizedBox(height: 32),
+        
+        // 3. Recent Activity (last 10)
+        _buildSectionHeader('Your Recent Activity', Icons.history_rounded),
+        const SizedBox(height: 16),
+        _buildDirectorActivityList(currentDirector?.id ?? '', currentUser.uid),
+      ],
+    );
+  }
+
+  Widget _buildBirthdayAlerts() {
+    final companiesWithBirthday = CompanyData.companies.where((c) => c.isBirthdayThisMonth).toList();
+    if (companiesWithBirthday.isEmpty) return const SizedBox.shrink();
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4A00E0).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: color,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.cake_rounded, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Company Celebration!',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Text(
+                  'Birthday this month: ${companiesWithBirthday.take(2).map((c) => c.companyName).join(", ")}${companiesWithBirthday.length > 2 ? '...' : ''}',
+                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDirectorCompanyCard(Director? director) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = const Color(0xFF6366F1);
+    
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyListScreen())),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(Icons.business_rounded, color: primary, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Company Details',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        '${director?.companies.length ?? 0} Companies Assigned',
+                        style: TextStyle(
+                          color: isDark ? Colors.white38 : Colors.black45,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black26, size: 16),
+              ],
+            ),
+            if (director != null && director.companies.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Divider(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildMiniStat('Director Role', 'Active', isDark),
+                  _buildMiniStat('Verification', 'Level 2', isDark),
+                  _buildMiniStat('Profile', '90%', isDark),
+                ],
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 
-}
+  Widget _buildMiniStat(String label, String value, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.w800),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDJMFormCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FormListScreen())),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF10B981), Color(0xFF059669)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF10B981).withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.description_rounded, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'DJM Form',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                  ),
+                  Text(
+                    'Fill and submit forms directly',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDirectorActivityList(String directorId, String userId) {
+    return StreamBuilder<List<ActivityLog>>(
+      stream: ActivityLogService().getDirectorActivityStream(directorId, userId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+        
+        final logs = snapshot.data!;
+        if (logs.isEmpty) {
+          return Center(
+            child: Text(
+              'No recent activity',
+              style: TextStyle(color: Colors.grey.withOpacity(0.5)),
+            ),
+          );
+        }
+
+        return Column(
+          children: logs.map((log) => _buildActivityItem(log)).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildActivityItem(ActivityLog log) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _getActivityColor(log.action).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(_getActivityIcon(log.action), color: _getActivityColor(log.action), size: 18),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  log.details,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  DateFormat('dd MMM, hh:mm a').format(log.timestamp),
+                  style: TextStyle(color: Colors.grey, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getActivityColor(ActivityAction action) {
+    switch (action) {
+      case ActivityAction.create: return Colors.green;
+      case ActivityAction.update: return Colors.blue;
+      case ActivityAction.delete: return Colors.red;
+      case ActivityAction.export: return Colors.orange;
+      default: return Colors.grey;
+    }
+  }
+
+  IconData _getActivityIcon(ActivityAction action) {
+    switch (action) {
+      case ActivityAction.create: return Icons.add_circle_outline_rounded;
+      case ActivityAction.update: return Icons.edit_note_rounded;
+      case ActivityAction.delete: return Icons.delete_outline_rounded;
+      case ActivityAction.export: return Icons.ios_share_rounded;
+      default: return Icons.notifications_none_rounded;
+    }
+  }

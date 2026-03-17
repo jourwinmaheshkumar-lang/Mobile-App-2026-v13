@@ -22,12 +22,30 @@ class ActivityLogService {
     });
   }
 
+  Stream<List<ActivityLog>> getDirectorActivityStream(String directorId, String userId) {
+    return _collection
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => ActivityLog.fromDoc(doc))
+          .where((log) {
+            // Activities performed by the director OR activities related to this director entity
+            return (log.userId == userId || (log.entityType == EntityType.director && log.entityId == directorId)) 
+                   && log.action != ActivityAction.sync;
+          })
+          .take(10) // Only last 10 as requested
+          .toList();
+    });
+  }
+
   Future<void> log({
     required ActivityAction action,
     required EntityType entityType,
     required String entityName,
     String? entityId,
     required String details,
+    String userId = 'Admin',
   }) async {
     try {
       final log = ActivityLog(
@@ -38,6 +56,7 @@ class ActivityLogService {
         entityId: entityId,
         timestamp: DateTime.now(),
         details: details,
+        userId: userId,
       );
       await _collection.add(log.toMap());
     } catch (e) {

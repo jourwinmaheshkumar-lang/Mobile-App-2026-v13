@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Company {
   final String companyName;
   final String cin;
@@ -12,6 +14,31 @@ class Company {
     required this.dateOfIncorporation,
     required this.address,
   });
+
+  DateTime? get incorporationDateTime {
+    try {
+      return DateFormat('d MMMM yyyy').parse(dateOfIncorporation);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  int get age {
+    final date = incorporationDateTime;
+    if (date == null) return 0;
+    final now = DateTime.now();
+    int age = now.year - date.year;
+    if (now.month < date.month || (now.month == date.month && now.day < date.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  bool get isBirthdayThisMonth {
+    final date = incorporationDateTime;
+    if (date == null) return false;
+    return DateTime.now().month == date.month;
+  }
 
   Map<String, dynamic> toMap() {
     return {

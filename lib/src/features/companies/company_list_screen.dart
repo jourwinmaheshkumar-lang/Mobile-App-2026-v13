@@ -4,6 +4,8 @@ import 'dart:ui';
 import '../../core/theme.dart';
 import '../../core/models/company.dart';
 import '../../core/utils/company_data.dart';
+import '../../core/repositories/director_repository.dart';
+import '../../core/models/director.dart';
 
 class CompanyListScreen extends StatefulWidget {
   const CompanyListScreen({super.key});
@@ -15,19 +17,29 @@ class CompanyListScreen extends StatefulWidget {
 class _CompanyListScreenState extends State<CompanyListScreen> {
   final List<Company> _companies = CompanyData.companies;
   final TextEditingController _searchController = TextEditingController();
+  final DirectorRepository _directorRepo = DirectorRepository();
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
+  List<Director> _allDirectors = [];
 
   @override
   void initState() {
     super.initState();
+    _loadDirectors();
     _scrollController.addListener(() {
       if (_scrollController.offset > 50 && !_isScrolled) {
         setState(() => _isScrolled = true);
       } else if (_scrollController.offset <= 50 && _isScrolled) {
         setState(() => _isScrolled = false);
       }
+    });
+  }
+
+  Future<void> _loadDirectors() async {
+    await _directorRepo.loadAll();
+    setState(() {
+      _allDirectors = _directorRepo.all;
     });
   }
 
@@ -46,6 +58,12 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
              c.cin.toLowerCase().contains(query) ||
              c.registrationNumber.toLowerCase().contains(query);
     }).toList();
+  }
+
+  List<Director> _getDirectorsForCompany(String companyName) {
+    return _allDirectors.where((d) => 
+      d.companies.any((c) => c.companyName == companyName)
+    ).toList();
   }
 
   @override
@@ -359,6 +377,9 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
   }
 
   Widget _buildPremiumCompanyCard(Company company, int index, bool isDark, Color primary) {
+    final isBirthday = company.isBirthdayThisMonth;
+    final companyDirectors = _getDirectorsForCompany(company.companyName);
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 600 + (index * 100)),
@@ -378,7 +399,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: primary.withOpacity(isDark ? 0.05 : 0.08),
+              color: isBirthday ? const Color(0xFF4A00E0).withOpacity(0.2) : primary.withOpacity(isDark ? 0.05 : 0.08),
               blurRadius: 30,
               offset: const Offset(0, 15),
             ),
@@ -388,19 +409,27 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
           borderRadius: BorderRadius.circular(24),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B).withOpacity(0.7) : Colors.white.withOpacity(0.9),
+                gradient: isBirthday 
+                  ? const LinearGradient(
+                    colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                  : null,
+                color: !isBirthday ? (isDark ? const Color(0xFF1E293B).withOpacity(0.7) : Colors.white.withOpacity(0.9)) : null,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+                  color: isBirthday ? Colors.white.withOpacity(0.2) : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
                   width: 1.5,
                 ),
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _showProfessionalDetails(company, isDark, primary),
+                  onTap: () => _showProfessionalDetails(company, isDark, primary, companyDirectors),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
@@ -411,19 +440,20 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [primary, primary.withOpacity(0.7)],
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
+                                color: isBirthday ? Colors.white.withOpacity(0.2) : primary.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                                boxShadow: isBirthday ? [
                                   BoxShadow(
-                                    color: primary.withOpacity(0.3),
+                                    color: Colors.white.withOpacity(0.1),
                                     blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                                  )
+                                ] : null,
                               ),
-                              child: const Icon(Icons.business_rounded, color: Colors.white, size: 24),
+                              child: Icon(
+                                isBirthday ? Icons.cake_rounded : Icons.business_rounded, 
+                                color: isBirthday ? Colors.white : primary, 
+                                size: 24
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -435,7 +465,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                      color: isBirthday ? Colors.white : (isDark ? Colors.white : const Color(0xFF0F172A)),
                                       fontSize: 17,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: -0.5,
@@ -445,7 +475,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                   Text(
                                     'CIN: ${company.cin}',
                                     style: TextStyle(
-                                      color: primary,
+                                      color: isBirthday ? Colors.white70 : primary,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                       fontFamily: 'monospace',
@@ -457,13 +487,14 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        Divider(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+                        Divider(color: isBirthday ? Colors.white24 : (isDark ? Colors.white10 : Colors.black.withOpacity(0.05))),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildMiniInfo('REG NO.', company.registrationNumber, isDark),
-                            _buildMiniInfo('INCORPORATED', company.dateOfIncorporation, isDark),
+                            _buildMiniInfo('DIRECTORS', '${companyDirectors.length}', isDark, isBirthday),
+                            _buildMiniInfo('AGE', '${company.age} Years', isDark, isBirthday),
+                            _buildMiniInfo('INCORPORATED', company.dateOfIncorporation, isDark, isBirthday),
                           ],
                         ),
                       ],
@@ -478,19 +509,19 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
     );
   }
 
-  Widget _buildMiniInfo(String label, String value, bool isDark) {
+  Widget _buildMiniInfo(String label, String value, bool isDark, bool isBirthday) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(
-          color: isDark ? Colors.white38 : Colors.black38,
+          color: isBirthday ? Colors.white60 : (isDark ? Colors.white38 : Colors.black38),
           fontSize: 9,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
         )),
         const SizedBox(height: 4),
         Text(value, style: TextStyle(
-          color: isDark ? Colors.white70 : const Color(0xFF475569),
+          color: isBirthday ? Colors.white : (isDark ? Colors.white70 : const Color(0xFF475569)),
           fontSize: 12,
           fontWeight: FontWeight.w700,
         )),
@@ -498,7 +529,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
     );
   }
 
-  void _showProfessionalDetails(Company company, bool isDark, Color primary) {
+  void _showProfessionalDetails(Company company, bool isDark, Color primary, List<Director> directors) {
     HapticFeedback.heavyImpact();
     showModalBottomSheet(
       context: context,
@@ -537,17 +568,23 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [primary, primary.withOpacity(0.8)]),
+                            gradient: company.isBirthdayThisMonth 
+                              ? const LinearGradient(colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)])
+                              : LinearGradient(colors: [primary, primary.withOpacity(0.8)]),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: primary.withOpacity(0.3),
+                                color: (company.isBirthdayThisMonth ? const Color(0xFF4A00E0) : primary).withOpacity(0.3),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.business_rounded, color: Colors.white, size: 40),
+                          child: Icon(
+                            company.isBirthdayThisMonth ? Icons.cake_rounded : Icons.business_rounded, 
+                            color: Colors.white, 
+                            size: 40
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -561,11 +598,31 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                           letterSpacing: -1.0,
                         ),
                       ),
+                      if (company.isBirthdayThisMonth) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Happy ${company.age} Anniversary!',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF8E2DE2),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 32),
                       _buildDetailSection('Registration Metadata', [
                         _buildDetailRow('Corporate ID (CIN)', company.cin, Icons.badge_rounded, primary, isDark),
                         _buildDetailRow('Registration #', company.registrationNumber, Icons.confirmation_number_rounded, primary, isDark),
-                        _buildDetailRow('Birth Date', company.dateOfIncorporation, Icons.event_available_rounded, primary, isDark),
+                        _buildDetailRow('Incorporation Date', company.dateOfIncorporation, Icons.event_available_rounded, primary, isDark),
+                        _buildDetailRow('Company Age', '${company.age} Years', Icons.history_rounded, primary, isDark),
+                      ], isDark),
+                      const SizedBox(height: 24),
+                      _buildDetailSection('Board of Directors (${directors.length})', [
+                        if (directors.isEmpty)
+                          const Text('No directors listed for this company.')
+                        else
+                          ...directors.map((d) => _buildDirectorRow(d, isDark, primary)),
                       ], isDark),
                       const SizedBox(height: 24),
                       _buildDetailSection('Registered Presence', [
@@ -598,6 +655,44 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
     );
   }
 
+  Widget _buildDirectorRow(Director director, bool isDark, Color primary) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: primary.withOpacity(0.1),
+            radius: 16,
+            child: Text(
+              director.name.isNotEmpty ? director.name[0] : 'D',
+              style: TextStyle(color: primary, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  director.name,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  director.displayDin.isNotEmpty ? 'DIN: ${director.displayDin}' : 'No DIN',
+                  style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDetailSection(String title, List<Widget> children, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,12 +705,16 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
         )),
         const SizedBox(height: 16),
         Container(
+          width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(24),
           ),
-          child: Column(children: children),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: children
+          ),
         ),
       ],
     );
