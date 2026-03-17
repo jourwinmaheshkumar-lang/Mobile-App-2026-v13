@@ -14,11 +14,11 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 15,
-    changelog: "Fix: Synchronized version display across the app v1.1.4.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.4/director_management_arm64_v1.1.4.apk",
+    buildNumber: 16,
+    changelog: "Feature: Integrated Mantra MFS100 Biometric support v1.1.5.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.5/director_management_arm64_v1.1.5.apk",
     isMandatory: true,
-    latestVersion: "1.1.4",
+    latestVersion: "1.1.5",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
