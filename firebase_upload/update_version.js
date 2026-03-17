@@ -14,11 +14,11 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 10,
-    changelog: "Hotfix: Resolved syntax error in DashboardScreen v1.0.9.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.0.9/director_management_arm64_v1.0.9.apk",
+    buildNumber: 11,
+    changelog: "Stability Update: Persistent App Signing implemented v1.1.0.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.0/director_management_arm64_v1.1.0.apk",
     isMandatory: true,
-    latestVersion: "1.0.9",
+    latestVersion: "1.1.0",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
