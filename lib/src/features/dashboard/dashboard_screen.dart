@@ -14,6 +14,7 @@ import '../../core/services/notification_service.dart';
 import './notification_list_screen.dart';
 import '../../core/models/activity_log.dart';
 import '../../core/services/activity_log_service.dart';
+import '../../core/models/company.dart';
 import '../../core/utils/company_data.dart';
 import 'package:intl/intl.dart';
 
