@@ -860,7 +860,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Version 1.0.4',
+                'Version $_currentVersion',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,

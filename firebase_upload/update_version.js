@@ -14,11 +14,11 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 14,
-    changelog: "Hotfix: Resolved missing Company import in dashboard v1.1.3.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.3/director_management_arm64_v1.1.3.apk",
+    buildNumber: 15,
+    changelog: "Fix: Synchronized version display across the app v1.1.4.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.4/director_management_arm64_v1.1.4.apk",
     isMandatory: true,
-    latestVersion: "1.1.3",
+    latestVersion: "1.1.4",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
