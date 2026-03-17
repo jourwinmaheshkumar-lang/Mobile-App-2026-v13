@@ -149,14 +149,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // 🚀 Featured Birthdays (Shown to Everyone)
+                              _buildFeaturedBirthdays(directors),
+                              const SizedBox(height: 24),
+
                               if (isDirector)
                                 _buildDirectorDashboard(directors, currentDirector, currentUser)
                               else ...[
-                                _buildBirthdayAlerts(),
-                                const SizedBox(height: 24),
-                                // Metrics Section
+                                // Metrics Section (Admin/Staff Only)
                                 _buildMetricsSection(),
-                                
                                 const SizedBox(height: 32),
                                 _buildQuickActionsSection(isAdmin, currentUser),
                               ],
@@ -1016,11 +1017,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Birthday Highlights
-        _buildBirthdayAlerts(),
-        
-        const SizedBox(height: 24),
-        
         // 1. Company Details Card
         _buildDirectorCompanyCard(currentDirector),
         
@@ -1039,12 +1035,43 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildBirthdayAlerts() {
+  Widget _buildFeaturedBirthdays(List<Director> allDirectors) {
     final companiesWithBirthday = CompanyData.companies.where((c) => c.isBirthdayThisMonth).toList();
     if (companiesWithBirthday.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Company Celebrations', Icons.cake_rounded),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 240,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: companiesWithBirthday.length,
+            padding: EdgeInsets.zero,
+            itemBuilder: (context, index) {
+              final company = companiesWithBirthday[index];
+              final companyDirectors = allDirectors.where((d) => 
+                d.companies.any((c) => c.companyName == company.companyName)
+              ).toList();
+              
+              return Container(
+                width: MediaQuery.of(context).size.width * 0.85,
+                margin: const EdgeInsets.only(right: 16),
+                child: _buildFeaturedCompanyCard(company, companyDirectors),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeaturedCompanyCard(Company company, List<Director> directors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
@@ -1060,37 +1087,62 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-      child: Row(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.cake_rounded, color: Colors.white, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Company Celebration!',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
                 ),
-                Text(
-                  'Birthday this month: ${companiesWithBirthday.take(2).map((c) => c.companyName).join(", ")}${companiesWithBirthday.length > 2 ? '...' : ''}',
-                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: const Icon(Icons.cake_rounded, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      company.companyName,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Happy ${company.age} Years Anniversary!',
+                      style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildMiniInfoWhite('DIRECTORS', '${directors.length}'),
+              _buildMiniInfoWhite('ESTABLISHED', company.dateOfIncorporation.split(' ').last),
+              _buildMiniInfoWhite('STATUS', 'ACTIVE'),
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMiniInfoWhite(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 9, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900)),
+      ],
     );
   }
 
