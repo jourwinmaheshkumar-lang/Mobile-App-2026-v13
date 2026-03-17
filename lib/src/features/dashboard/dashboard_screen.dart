@@ -16,6 +16,7 @@ import '../../core/models/company.dart';
 import '../../core/utils/company_data.dart';
 import '../biometrics/biometric_scanner_sheet.dart';
 import '../../core/models/activity_log.dart';
+import 'widgets/celebration_card.dart';
 import 'notification_list_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -1148,9 +1149,12 @@ class _DashboardScreenState extends State<DashboardScreen>
               ).toList();
               
               return Container(
-                width: MediaQuery.of(context).size.width * 0.85,
+                width: MediaQuery.of(context).size.width * 0.88,
                 margin: const EdgeInsets.only(right: 16),
-                child: _buildFeaturedCompanyCard(company, companyDirectors),
+                child: CelebrationCard(
+                  company: company,
+                  directors: companyDirectors,
+                ),
               );
             },
           ),
@@ -1159,83 +1163,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildFeaturedCompanyCard(Company company, List<Director> directors) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4A00E0).withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.cake_rounded, color: Colors.white, size: 28),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      company.companyName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      'Happy ${company.age} Years Anniversary!',
-                      style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildMiniInfoWhite('DIRECTORS', '${directors.length}'),
-              _buildMiniInfoWhite('ESTABLISHED', company.dateOfIncorporation.split(' ').last),
-              _buildMiniInfoWhite('STATUS', 'ACTIVE'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildMiniInfoWhite(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 9, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900)),
-      ],
-    );
-  }
 
   Widget _buildDirectorCompanyCard(Director? director) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
