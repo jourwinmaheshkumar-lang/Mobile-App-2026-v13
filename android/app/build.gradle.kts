@@ -18,7 +18,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -41,15 +41,17 @@ android {
                 storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: ""
                 keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: ""
                 keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: ""
-            } else {
-                signingConfig = signingConfigs.getByName("debug")
             }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (project.rootProject.file("android/app/release.keystore").exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 }
