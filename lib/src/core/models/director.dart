@@ -55,6 +55,9 @@ class Director {
   final bool isRemoved;
   final DateTime? removedAt;
 
+  // Biometric details
+  final String? fingerprintTemplate;
+
   // New fields for multiple companies
   final List<CompanyDetail> companies;
 
@@ -76,6 +79,7 @@ class Director {
     this.emailLinkedPhone = '',
     this.isRemoved = false,
     this.removedAt,
+    this.fingerprintTemplate,
     this.companies = const [],
   }) : din = _padDin(din);
 
@@ -135,6 +139,7 @@ class Director {
     String? emailLinkedPhone,
     bool? isRemoved,
     DateTime? removedAt,
+    String? fingerprintTemplate,
     List<CompanyDetail>? companies,
   }) {
     return Director(
@@ -155,6 +160,7 @@ class Director {
       emailLinkedPhone: emailLinkedPhone ?? this.emailLinkedPhone,
       isRemoved: isRemoved ?? this.isRemoved,
       removedAt: removedAt ?? this.removedAt,
+      fingerprintTemplate: fingerprintTemplate ?? this.fingerprintTemplate,
       companies: companies ?? this.companies,
     );
   }

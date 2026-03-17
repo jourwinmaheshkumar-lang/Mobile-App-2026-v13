@@ -11,11 +11,11 @@ import '../admin/user_management_screen.dart';
 import '../companies/company_list_screen.dart';
 import '../forms/screens/form_list_screen.dart';
 import '../../core/services/notification_service.dart';
-import './notification_list_screen.dart';
-import '../../core/models/activity_log.dart';
 import '../../core/services/activity_log_service.dart';
 import '../../core/models/company.dart';
 import '../../core/utils/company_data.dart';
+import '../../core/services/biometric_service.dart';
+import '../biometrics/biometric_scanner_sheet.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -799,6 +799,41 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ],
                   ),
                 ),
+            ),
+          ),
+        ),
+
+        // 🧬 Biometric Search Card
+        GestureDetector(
+          onTap: _showBiometricSearch,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(14)),
+                  child: const Icon(Icons.fingerprint_rounded, color: Colors.white),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Biometric Search', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('Scan finger to find director records', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    ],
+                  ),
+                ),
                 const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
               ],
             ),
@@ -1383,5 +1418,98 @@ class _DashboardScreenState extends State<DashboardScreen>
       case ActivityAction.export: return Icons.ios_share_rounded;
       default: return Icons.notifications_none_rounded;
     }
+  }
+
+  void _showBiometricSearch() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BiometricScannerSheet(
+        mode: BiometricMode.identify,
+        onIdentified: (director) {
+          _showDirectorDetails(director);
+        },
+      ),
+    );
+  }
+
+  void _showDirectorDetails(Director director) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: AppTheme.primary.withOpacity(0.1),
+                  child: Text(director.name.isNotEmpty ? director.name[0] : '?', style: TextStyle(color: AppTheme.primary, fontSize: 24, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(director.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                      Text('DIN: ${director.din}', style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                  child: const Text('FOUND', style: TextStyle(color: Colors.green, fontWeight: FontWeight.w900, fontSize: 10)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _buildDetailRow(Icons.email_outlined, 'Email', director.email),
+            _buildDetailRow(Icons.phone_outlined, 'Phone', director.bankLinkedPhone),
+            _buildDetailRow(Icons.pin_drop_outlined, 'Address', director.aadhaarAddress),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('CLOSE'),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              Text(value.isEmpty ? 'Not Provided' : value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

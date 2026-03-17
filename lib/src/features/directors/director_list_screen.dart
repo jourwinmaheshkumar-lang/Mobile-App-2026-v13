@@ -12,6 +12,7 @@ import 'add_director_sheet.dart';
 import 'advanced_export_sheet.dart';
 import 'removed_directors_screen.dart';
 import '../../core/utils/director_migration_helper.dart';
+import '../biometrics/biometric_scanner_sheet.dart';
 
 enum DirectorFilter {
   all,
@@ -1856,13 +1857,21 @@ class _DirectorListScreenState extends State<DirectorListScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          textUtils.format(d.name),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              textUtils.format(d.name),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                                color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
+                              ),
+                            ),
+                            if (d.fingerprintTemplate != null) ...[
+                              const SizedBox(width: 6),
+                              Icon(Icons.fingerprint_rounded, color: Colors.green, size: 12),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Row(
@@ -1915,6 +1924,19 @@ class _DirectorListScreenState extends State<DirectorListScreen>
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  // Biometric Enrollment Button
+                  if (currentRole == UserRole.admin || currentRole == UserRole.officeTeam)
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => _enrollFingerprint(d),
+                      icon: Icon(
+                        d.fingerprintTemplate != null ? Icons.fingerprint_rounded : Icons.add_fingerprint_rounded,
+                        color: d.fingerprintTemplate != null ? Colors.green : (isDark ? Colors.white24 : Colors.grey.withOpacity(0.5)),
+                        size: 20,
+                      ),
+                      tooltip: d.fingerprintTemplate != null ? 'Re-enroll' : 'Enroll',
+                    ),
                   // Arrow
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -2415,6 +2437,40 @@ class _DirectorListScreenState extends State<DirectorListScreen>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const RemovedDirectorsScreen()),
+    );
+  }
+
+  void _enrollFingerprint(Director director) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BiometricScannerSheet(
+        mode: BiometricMode.enroll,
+        onEnrolled: (template) async {
+          try {
+            final updatedDirector = director.copyWith(fingerprintTemplate: template);
+            await _repo.update(updatedDirector);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Fingerprint enrolled successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Enrollment failed: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 }

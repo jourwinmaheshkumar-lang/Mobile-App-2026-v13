@@ -237,6 +237,7 @@ class DirectorRepository {
       emailLinkedPhone: emailPhone,
       isRemoved: isRemoved,
       removedAt: removedAt,
+      fingerprintTemplate: data['fingerprintTemplate'],
       companies: companies,
     );
   }
@@ -265,6 +266,7 @@ class DirectorRepository {
       'Email ID Phone number': d.emailLinkedPhone,
       'isRemoved': d.isRemoved,
       'removedAt': d.removedAt != null ? Timestamp.fromDate(d.removedAt!) : null,
+      'fingerprintTemplate': d.fingerprintTemplate,
       'companies': d.companies.map((c) => c.toMap()).toList(),
     };
   }
