@@ -154,7 +154,7 @@ class _BiometricScannerSheetState extends State<BiometricScannerSheet> with Sing
                 decoration: BoxDecoration(
                   color: _isDeviceConnected 
                       ? AppTheme.primary.withOpacity(0.1) 
-                      : (isDark ? Colors.white05 : Colors.black05),
+                      : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: _isDeviceConnected ? AppTheme.primary : (isDark ? Colors.white12 : Colors.black12),

@@ -1931,7 +1931,7 @@ class _DirectorListScreenState extends State<DirectorListScreen>
                       visualDensity: VisualDensity.compact,
                       onPressed: () => _enrollFingerprint(d),
                       icon: Icon(
-                        d.fingerprintTemplate != null ? Icons.fingerprint_rounded : Icons.add_fingerprint_rounded,
+                        d.fingerprintTemplate != null ? Icons.fingerprint_rounded : Icons.fingerprint,
                         color: d.fingerprintTemplate != null ? Colors.green : (isDark ? Colors.white24 : Colors.grey.withOpacity(0.5)),
                         size: 20,
                       ),

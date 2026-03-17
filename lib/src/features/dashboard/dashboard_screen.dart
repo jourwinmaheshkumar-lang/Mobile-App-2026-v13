@@ -14,8 +14,9 @@ import '../../core/services/notification_service.dart';
 import '../../core/services/activity_log_service.dart';
 import '../../core/models/company.dart';
 import '../../core/utils/company_data.dart';
-import '../../core/services/biometric_service.dart';
 import '../biometrics/biometric_scanner_sheet.dart';
+import '../../core/models/activity_log.dart';
+import 'notification_list_screen.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -757,6 +758,58 @@ class _DashboardScreenState extends State<DashboardScreen>
         const SizedBox(height: 16),
 
         GestureDetector(
+          onTap: () => Navigator.push(
+            context, 
+            MaterialPageRoute(builder: (context) => const NotificationListScreen())
+          ),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)]),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withOpacity(0.3), 
+                  blurRadius: 15, 
+                  offset: const Offset(0, 8)
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2), 
+                    borderRadius: BorderRadius.circular(14)
+                  ),
+                  child: const Icon(Icons.notifications_rounded, color: Colors.white),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Notifications', 
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Text(
+                        'View all your notifications', 
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+              ],
+            ),
+          ),
+        ),
+
+        GestureDetector(
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyListScreen())),
           child: Container(
             width: double.infinity,
@@ -799,6 +852,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ],
                   ),
                 ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+              ],
             ),
           ),
         ),
@@ -1348,7 +1403,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         }
 
         return Column(
-          children: logs.map((log) => _buildActivityItem(log)).toList(),
+          children: logs.map<Widget>((log) => _buildActivityItem(log)).toList(),
         );
       },
     );

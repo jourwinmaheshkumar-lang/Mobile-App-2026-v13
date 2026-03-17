@@ -28,41 +28,18 @@ class BiometricService {
     return await isServiceAvailable();
   }
 
-  /// Capture a fingerprint and return the PidData XML string.
-  Future<String?> captureRawResponse() async {
+  /// Capture a fingerprint and return the biometric data value.
+  Future<String?> captureTemplate() async {
     try {
       final pidData = await Msf100.capture();
-      if (pidData != null && pidData.pidData != null) {
-        return pidData.pidData;
+      if (pidData != null && pidData.data != null) {
+        return pidData.data!.value;
       }
       return null;
     } catch (e) {
-      debugPrint('Biometric Identification Error: $e');
+      debugPrint('Biometric Capture Error: $e');
       return null;
     }
-  }
-
-  /// Extracts the biometric template or unique hash from the RD Service response.
-  String? _getTemplateFromXml(String xmlString) {
-    try {
-      final document = XmlDocument.parse(xmlString);
-      final dataElement = document.findAllElements('Data').firstOrNull;
-      if (dataElement != null) {
-        return dataElement.innerText; // This is the encrypted PID block or template
-      }
-    } catch (e) {
-      debugPrint('XML Parse Error: $e');
-    }
-    return null;
-  }
-
-  /// Capture and return a template for enrollment.
-  Future<String?> captureTemplate() async {
-    final response = await captureRawResponse();
-    if (response != null) {
-      return _getTemplateFromXml(response);
-    }
-    return null;
   }
 
   /// Match locally.
