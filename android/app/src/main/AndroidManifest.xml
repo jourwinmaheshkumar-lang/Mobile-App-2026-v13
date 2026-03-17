@@ -45,5 +45,8 @@
             <action android:name="android.intent.action.INSTALL_PACKAGE" />
             <data android:scheme="package" />
         </intent>
+        <!-- Mantra RD Service Visibility -->
+        <package android:name="com.mantra.rdservice" />
+        <package android:name="com.mantra.mfs110.rdservice" />
     </queries>
 </manifest>

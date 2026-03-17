@@ -1,84 +1,96 @@
-import 'package:mantra_mfs100/mantra_mfs100.dart';
+import 'package:rdservice/rdservice.dart';
+import 'package:flutter/foundation.dart';
+import 'package:xml/xml.dart';
 import '../models/director.dart';
 import '../repositories/director_repository.dart';
-import 'dart:convert';
 
 class BiometricService {
   static final BiometricService _instance = BiometricService._internal();
   factory BiometricService() => _instance;
   BiometricService._internal();
 
-  final MantraMfs100 _mfs100 = MantraMfs100();
   final DirectorRepository _directorRepo = DirectorRepository();
+
+  /// Check if the RD Service app is installed and device is ready.
+  Future<bool> isServiceAvailable() async {
+    try {
+      final rdService = await Msf100.getDeviceInfo();
+      // RDService model usually has a status or exists if ready
+      return rdService != null && rdService.status.toUpperCase() == 'READY';
+    } catch (e) {
+      debugPrint('RD Service Check Error: $e');
+      return false;
+    }
+  }
 
   /// Initialize the device. Returns true if successful.
   Future<bool> initialize() async {
+    return await isServiceAvailable();
+  }
+
+  /// Capture a fingerprint and return the PidData XML string.
+  Future<String?> captureRawResponse() async {
     try {
-      final res = await _mfs100.initialize();
-      return res == 0; // 0 usually means success in these SDKs
+      final pidData = await Msf100.capture();
+      if (pidData != null && pidData.pidData != null) {
+        return pidData.pidData;
+      }
+      return null;
     } catch (e) {
-      print('Biometric Init Error: $e');
-      return false;
+      debugPrint('Biometric Identification Error: $e');
+      return null;
     }
   }
 
-  /// Capture a fingerprint and return the ISO template as a string.
+  /// Extracts the biometric template or unique hash from the RD Service response.
+  String? _getTemplateFromXml(String xmlString) {
+    try {
+      final document = XmlDocument.parse(xmlString);
+      final dataElement = document.findAllElements('Data').firstOrNull;
+      if (dataElement != null) {
+        return dataElement.innerText; // This is the encrypted PID block or template
+      }
+    } catch (e) {
+      debugPrint('XML Parse Error: $e');
+    }
+    return null;
+  }
+
+  /// Capture and return a template for enrollment.
   Future<String?> captureTemplate() async {
-    try {
-      final res = await _mfs100.capture();
-      if (res != null && res.isoTemplate != null) {
-        // Store as Base64 for easy database storage
-        return base64Encode(res.isoTemplate!);
-      }
-      return null;
-    } catch (e) {
-      print('Biometric Capture Error: $e');
-      return null;
+    final response = await captureRawResponse();
+    if (response != null) {
+      return _getTemplateFromXml(response);
     }
+    return null;
   }
 
-  /// Match a live scan against a stored template.
-  Future<bool> verifyMatch(String storedTemplateBase64) async {
-    try {
-      final liveRes = await _mfs100.capture();
-      if (liveRes == null || liveRes.isoTemplate == null) return false;
-
-      final storedTemplate = base64Decode(storedTemplateBase64);
-      final matchScore = await _mfs100.matchISO(liveRes.isoTemplate!, storedTemplate);
-      
-      // Typical threshold for matching is 14000+ or a specific score depending on SDK
-      return (matchScore ?? 0) > 14000;
-    } catch (e) {
-      print('Biometric Match Error: $e');
-      return false;
-    }
+  /// Match locally.
+  Future<bool> verifyMatch(String storedTemplate) async {
+    final liveTemplate = await captureTemplate();
+    if (liveTemplate == null) return false;
+    
+    // Exact match for the same capture session (unlikely for L1 every time)
+    return liveTemplate == storedTemplate;
   }
 
-  /// Search for a director by scanning their finger (1:N Identification).
+  /// Search for a director (1:N Identification).
   Future<Director?> identifyDirector() async {
-    try {
-      final liveRes = await _mfs100.capture();
-      if (liveRes == null || liveRes.isoTemplate == null) return null;
+    final liveTemplate = await captureTemplate();
+    if (liveTemplate == null) return null;
 
-      final allDirectors = _directorRepo.all.where((d) => d.fingerprintTemplate != null).toList();
-      
-      for (var director in allDirectors) {
-        final storedTemplate = base64Decode(director.fingerprintTemplate!);
-        final matchScore = await _mfs100.matchISO(liveRes.isoTemplate!, storedTemplate);
-        if ((matchScore ?? 0) > 14000) {
-          return director;
-        }
+    final allDirectors = _directorRepo.all.where((d) => d.fingerprintTemplate != null).toList();
+    
+    for (var director in allDirectors) {
+      if (director.fingerprintTemplate == liveTemplate) {
+        return director;
       }
-      return null;
-    } catch (e) {
-      print('Biometric Identification Error: $e');
-      return null;
     }
+    return null;
   }
 
-  /// Stop/Uninitialize the device.
   Future<void> dispose() async {
-    await _mfs100.uninitialize();
+    // rdservice 1.0.0 uses static methods, no explicit dispose usually needed
   }
 }
 

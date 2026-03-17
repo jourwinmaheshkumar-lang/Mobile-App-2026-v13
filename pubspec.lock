@@ -57,6 +57,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  change_app_package_name:
+    dependency: transitive
+    description:
+      name: change_app_package_name
+      sha256: "8e43b754fe960426904d77ed4c62fa8c9834deaf6e293ae40963fa447482c4c5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.0"
   characters:
     dependency: transitive
     description:
@@ -568,6 +576,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  rdservice:
+    dependency: "direct main"
+    description:
+      name: rdservice
+      sha256: e0befd919990ee17d915a8d64ad77fce7e10720bc948cc9188d2d1842478aebe
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   share_plus:
     dependency: "direct main"
     description:
@@ -814,13 +830,21 @@ packages:
     source: hosted
     version: "1.1.0"
   xml:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: xml
       sha256: "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025"
       url: "https://pub.dev"
     source: hosted
     version: "6.6.1"
+  xml2json:
+    dependency: transitive
+    description:
+      name: xml2json
+      sha256: "8a7ae63b76676f083d81287b61f03222952609c0507893bc62e60a4a588a9702"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.7"
   yaml:
     dependency: transitive
     description:
