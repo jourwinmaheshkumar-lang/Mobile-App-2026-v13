@@ -1331,3 +1331,4 @@ class _DashboardScreenState extends State<DashboardScreen>
       default: return Icons.notifications_none_rounded;
     }
   }
+}
