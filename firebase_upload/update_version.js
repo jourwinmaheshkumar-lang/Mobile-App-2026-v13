@@ -14,11 +14,11 @@ async function updateVersion() {
   console.log('Updating app version in Firestore...');
   
   const versionData = {
-    buildNumber: 17,
-    changelog: "Feature: Added supports for Mantra MFS110 (L1) Biometric Scanner v1.1.6.",
-    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.6/director_management_arm64_v1.1.6.apk",
+    buildNumber: 18,
+    changelog: "Fix: Resolved build errors in dashboard and biometric service for release v1.1.7.",
+    downloadUrl: "https://github.com/jourwinmaheshkumar-lang/Mobile-App-2026-v13/releases/download/v1.1.7/director_management_arm64_v1.1.7.apk",
     isMandatory: true,
-    latestVersion: "1.1.6",
+    latestVersion: "1.1.7",
     releasedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
