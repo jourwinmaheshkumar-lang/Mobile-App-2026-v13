@@ -23,6 +23,12 @@ class Company {
     }
   }
 
+  String get formattedIncorporationDate {
+    final date = incorporationDateTime;
+    if (date == null) return dateOfIncorporation;
+    return DateFormat('dd MMM yyyy').format(date).toUpperCase();
+  }
+
   int get age {
     final date = incorporationDateTime;
     if (date == null) return 0;
@@ -38,6 +44,20 @@ class Company {
     final date = incorporationDateTime;
     if (date == null) return false;
     return DateTime.now().month == date.month;
+  }
+
+  bool get isAnniversaryToday {
+    final date = incorporationDateTime;
+    if (date == null) return false;
+    final now = DateTime.now();
+    return now.day == date.day && now.month == date.month;
+  }
+
+  bool get isAnniversaryTomorrow {
+    final date = incorporationDateTime;
+    if (date == null) return false;
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    return tomorrow.day == date.day && tomorrow.month == date.month;
   }
 
   Map<String, dynamic> toMap() {

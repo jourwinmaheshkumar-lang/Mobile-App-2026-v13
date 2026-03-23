@@ -4,11 +4,13 @@ class CompanyDetail {
   final String companyName;
   final String designation;
   final String appointmentDate;
+  final int boardOrder;
 
   CompanyDetail({
     required this.companyName,
     required this.designation,
     required this.appointmentDate,
+    this.boardOrder = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -16,6 +18,7 @@ class CompanyDetail {
       'companyName': companyName,
       'designation': designation,
       'appointmentDate': appointmentDate,
+      'boardOrder': boardOrder,
     };
   }
 
@@ -24,6 +27,21 @@ class CompanyDetail {
       companyName: map['companyName'] ?? map['Company'] ?? '',
       designation: map['designation'] ?? map['Designation'] ?? '',
       appointmentDate: map['appointmentDate'] ?? map['Appointment'] ?? '',
+      boardOrder: map['boardOrder'] ?? 0,
+    );
+  }
+
+  CompanyDetail copyWith({
+    String? companyName,
+    String? designation,
+    String? appointmentDate,
+    int? boardOrder,
+  }) {
+    return CompanyDetail(
+      companyName: companyName ?? this.companyName,
+      designation: designation ?? this.designation,
+      appointmentDate: appointmentDate ?? this.appointmentDate,
+      boardOrder: boardOrder ?? this.boardOrder,
     );
   }
 }
@@ -61,6 +79,13 @@ class Director {
   // New fields for multiple companies
   final List<CompanyDetail> companies;
 
+  // New fields for Office & Group Structure
+  final String? officeId;
+  final String? officeName;
+  final String? officePosting;
+  final bool isSpecial;
+  final String? specialRole; // e.g., 'Chairman', 'Corporate Secretary', etc.
+
   Director({
     required this.id,
     this.serialNo = 0,
@@ -81,6 +106,11 @@ class Director {
     this.removedAt,
     this.fingerprintTemplate,
     this.companies = const [],
+    this.officeId,
+    this.officeName,
+    this.officePosting,
+    this.isSpecial = false,
+    this.specialRole,
   }) : din = _padDin(din);
 
   static String _padDin(String din) {
@@ -141,6 +171,13 @@ class Director {
     DateTime? removedAt,
     String? fingerprintTemplate,
     List<CompanyDetail>? companies,
+    String? officeId,
+    String? officeName,
+    String? officePosting,
+    bool? isSpecial,
+    String? specialRole,
+    bool clearOffice = false,
+    bool clearSpecial = false,
   }) {
     return Director(
       id: id,
@@ -162,6 +199,11 @@ class Director {
       removedAt: removedAt ?? this.removedAt,
       fingerprintTemplate: fingerprintTemplate ?? this.fingerprintTemplate,
       companies: companies ?? this.companies,
+      officeId: clearOffice ? null : (officeId ?? this.officeId),
+      officeName: clearOffice ? null : (officeName ?? this.officeName),
+      officePosting: clearOffice ? null : (officePosting ?? this.officePosting),
+      isSpecial: isSpecial ?? (clearSpecial ? false : this.isSpecial),
+      specialRole: clearSpecial ? null : (specialRole ?? this.specialRole),
     );
   }
 }

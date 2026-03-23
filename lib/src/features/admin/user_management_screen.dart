@@ -4,6 +4,7 @@ import '../../core/models/user.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme.dart';
 import '../../core/repositories/director_repository.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -23,12 +24,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFF),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('User Management', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: -1)),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
+        title: Text(
+          'User Management', 
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 20)
+        ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: isDark ? Colors.white : Colors.black,
+        backgroundColor: AppTheme.primary,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Column(
         children: [
@@ -38,7 +50,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               stream: _firestore.collection('users').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator(color: AppTheme.primary));
                 }
                 
                 final docs = snapshot.data!.docs;
@@ -81,10 +93,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         ),
         child: TextField(
           onChanged: (v) => setState(() => _searchQuery = v),
-          decoration: const InputDecoration(
+          style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
+          decoration: InputDecoration(
             hintText: 'Search by DIN or Mobile',
+            hintStyle: GoogleFonts.inter(color: AppTheme.hintText, fontSize: 14),
             border: InputBorder.none,
-            icon: Icon(Icons.search_rounded),
+            icon: const Icon(Icons.search_rounded, color: AppTheme.primary),
           ),
         ),
       ),
@@ -136,13 +150,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               children: [
                 Text(
                   displayTitle,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.textPrimary),
                 ),
                 Text(
                   (displayTitle != user.username) 
                       ? '${user.username} | ${user.mobile ?? 'No Mobile'}' 
                       : (user.mobile ?? 'No Mobile'),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
@@ -212,16 +226,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       ),
       child: Text(
         role.name.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style: GoogleFonts.inter(color: color, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
       ),
     );
   }
 
   Color _getRoleColor(UserRole role) {
     switch (role) {
-      case UserRole.admin: return Colors.purple;
-      case UserRole.officeTeam: return Colors.blue;
-      case UserRole.director: return Colors.amber;
+      case UserRole.admin: return AppTheme.primary;
+      case UserRole.officeTeam: return const Color(0xFF3498DB);
+      case UserRole.director: return const Color(0xFFF39C12);
     }
   }
 

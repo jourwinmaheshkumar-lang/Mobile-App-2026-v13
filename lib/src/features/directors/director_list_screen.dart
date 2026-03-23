@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../core/services/localization_service.dart';
 import '../../core/repositories/director_repository.dart';
@@ -288,7 +292,7 @@ class _DirectorListScreenState extends State<DirectorListScreen>
         final currentRole = currentUser?.role ?? UserRole.director;
 
         return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0F172A) : AppTheme.background,
+          backgroundColor: AppTheme.background,
           body: StreamBuilder<List<Director>>(
             stream: _repo.directorsStream,
             builder: (context, snapshot) {
@@ -362,12 +366,12 @@ class _DirectorListScreenState extends State<DirectorListScreen>
                       ? SliverFillRemaining(
                           child: _buildEmptyState(),
                         )
-                      : _viewMode == ViewMode.table
-                        ? SliverToBoxAdapter(
-                            child: _buildTableView(directors, currentRole),
-                          )
-                        : SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                      : _viewMode == ViewMode.table 
+                          ? SliverToBoxAdapter(
+                              child: _buildTableView(directors, currentRole),
+                            )
+                          : SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                             sliver: SliverList(
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) {
@@ -410,133 +414,77 @@ class _DirectorListScreenState extends State<DirectorListScreen>
   }
 
   Widget _buildAppBar(int count) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : AppTheme.background;
-    final textPrimary = isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary;
-    final textTertiary = isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary;
-    
     return SliverAppBar(
-      expandedHeight: 115,
+      expandedHeight: 75,
       floating: true,
-      pinned: true,
-      stretch: true,
-      backgroundColor: bgColor,
-      surfaceTintColor: Colors.transparent,
+      pinned: false,
+      snap: true, // Optional: makes it snap back into view when scrolling down slightly
+      elevation: 0,
+      backgroundColor: AppTheme.primary,
+      toolbarHeight: 70,
+      leadingWidth: 40,
       leading: _currentFilter != DirectorFilter.all 
         ? IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: textPrimary),
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
             onPressed: () => Navigator.pop(context),
           )
         : null,
       flexibleSpace: FlexibleSpaceBar(
-        background: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Left: Icon + Title
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(
-                        child: Icon(_filterIcon, color: const Color(0xFF6366F1), size: 24),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _filterTitle,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: textPrimary,
-                              letterSpacing: -0.8,
-                              height: 1.1,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$count ${localizationService.tr('records_found')}',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Right: Action buttons
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Polished Trash / Removed Button
-                        StreamBuilder<List<Director>>(
-                          stream: _repo.removedDirectorsStream,
-                          builder: (context, snapshot) {
-                            final removedCount = snapshot.data?.length ?? 0;
-                            return GestureDetector(
-                              onTap: _navigateToRemovedDirectors,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF1F2),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFFECDD3), width: 1),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.delete_outline_rounded, color: Color(0xFFF43F5E), size: 20),
-                                    if (removedCount > 0) ...[
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFFF43F5E),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Text(
-                                          '$removedCount',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        const SizedBox(width: 12),
-                        // Sync Button
-                        _buildSyncButton(),
-                        const SizedBox(width: 12),
-                        // Premium Gold Export Button
-                        _buildExportButton(),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                        child: Icon(_filterIcon, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _filterTitle,
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                height: 1.1,
+                              ),
+                            ),
+                            Text(
+                              '$count ${localizationService.tr('records_found')}',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _buildSyncButton(),
+                      const SizedBox(width: 10),
+                      _buildExportButton(),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -545,90 +493,39 @@ class _DirectorListScreenState extends State<DirectorListScreen>
   }
 
   Widget _buildSearchSection(int count) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         children: [
-          // Search Bar
           Container(
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark 
-                    ? const Color(0xFF334155)
-                    : const Color(0xFFE2E8F0),
-                width: 1,
-              ),
+              color: AppTheme.cardSurface,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: AppTheme.softShadow,
             ),
             child: TextField(
               controller: _searchController,
               onChanged: (value) => setState(() => _searchQuery = value),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : const Color(0xFF1E293B),
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textPrimary,
               ),
               decoration: InputDecoration(
                 hintText: localizationService.tr('search_directors'),
-                hintStyle: TextStyle(
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8),
-                  fontWeight: FontWeight.w500,
-                ),
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF6366F1), size: 24),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primary, size: 22),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ),
           
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           
-          // Compact Actions Row
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none, // Allow shadows to be visible
             physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
-                // Segmented Toggle (Cards/Table)
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildViewToggleButton(
-                        icon: Icons.grid_view_rounded,
-                        isSelected: _viewMode == ViewMode.card,
-                        onTap: () {
-                          setState(() => _viewMode = ViewMode.card);
-                          _prefs.saveViewMode('card');
-                        },
-                        label: localizationService.tr('cards'),
-                      ),
-                      const SizedBox(width: 4),
-                      _buildViewToggleButton(
-                        icon: Icons.list_alt_rounded,
-                        isSelected: _viewMode == ViewMode.table,
-                        onTap: () {
-                          setState(() => _viewMode = ViewMode.table);
-                          _prefs.saveViewMode('table');
-                        },
-                        label: localizationService.tr('table'),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(width: 8),
-                
-                // Compact Sort
                 _buildActionChip(
                   onTap: () {
                     HapticFeedback.mediumImpact();
@@ -639,36 +536,29 @@ class _DirectorListScreenState extends State<DirectorListScreen>
                   },
                   icon: Icons.sort_rounded,
                   label: _sortAscending ? 'A-Z' : 'Z-A',
-                  color: const Color(0xFF6366F1),
+                  color: AppTheme.primary,
                   isActive: true,
                 ),
-                
-                const SizedBox(width: 8),
-                
-                // Compact Columns (Table only)
+                const SizedBox(width: 10),
+                _buildActionChip(
+                  onTap: _showFilterSheet,
+                  icon: Icons.tune_rounded,
+                  label: localizationService.tr('filter'),
+                  color: _currentFilter != DirectorFilter.all ? _filterColor : AppTheme.textSecondary,
+                  isActive: _currentFilter != DirectorFilter.all,
+                  showBadge: _currentFilter != DirectorFilter.all,
+                ),
+                const SizedBox(width: 10),
                 if (_viewMode == ViewMode.table) ...[
                   _buildActionChip(
                     onTap: _showColumnSettings,
                     icon: Icons.view_column_rounded,
                     label: localizationService.tr('cols'),
-                    color: const Color(0xFF64748B),
+                    color: AppTheme.info,
                     isActive: false,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                 ],
-
-                // Compact Filter
-                _buildActionChip(
-                  onTap: _showFilterSheet,
-                  icon: Icons.tune_rounded,
-                  label: localizationService.tr('filter'),
-                  color: _currentFilter != DirectorFilter.all ? _filterColor : const Color(0xFF475569),
-                  isActive: _currentFilter != DirectorFilter.all,
-                  showBadge: _currentFilter != DirectorFilter.all,
-                ),
-                const SizedBox(width: 8),
-                
-                // Removed Directors
                 StreamBuilder<List<Director>>(
                   stream: _repo.removedDirectorsStream,
                   builder: (context, snapshot) {
@@ -676,7 +566,7 @@ class _DirectorListScreenState extends State<DirectorListScreen>
                     return _buildActionChip(
                       onTap: _navigateToRemovedDirectors,
                       icon: Icons.delete_outline_rounded,
-                      label: 'Removed',
+                      label: 'Remove',
                       color: AppTheme.error,
                       isActive: false,
                       showBadge: removedCount > 0,
@@ -699,61 +589,44 @@ class _DirectorListScreenState extends State<DirectorListScreen>
     bool isActive = false,
     bool showBadge = false,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Color mapping to match screenshot specifically for A-Z
-    Color bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
-    Color textColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
-    Color iconColor = color;
-
-    if (label == 'A-Z' || label == 'Z-A') {
-      bgColor = const Color(0xFFEEF2FF);
-      textColor = const Color(0xFF6366F1);
-      iconColor = const Color(0xFF6366F1);
-    } else if (isActive) {
-      bgColor = color.withOpacity(0.1);
-      textColor = color;
-      iconColor = color;
-    }
+    Color bgColor = isActive ? color.withOpacity(0.12) : AppTheme.cardSurface;
+    Color textColor = isActive ? color : AppTheme.textSecondary;
 
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: (label == 'A-Z' || label == 'Z-A') 
-                ? const Color(0xFFC7D2FE) 
-                : (isActive ? color.withOpacity(0.3) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
-            width: 1.2,
+            color: isActive ? color.withOpacity(0.2) : AppTheme.borderLight,
+            width: 1,
           ),
-          boxShadow: isDark ? null : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
+          boxShadow: [
+            if (!isActive)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
           ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: iconColor),
-            const SizedBox(width: 8),
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
             Text(
-              label.toUpperCase(),
-              style: TextStyle(
+              label,
+              style: GoogleFonts.poppins(
                 fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: textColor,
-                letterSpacing: 0.5,
               ),
             ),
             if (showBadge) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Container(
                 width: 6,
                 height: 6,
@@ -807,17 +680,10 @@ class _DirectorListScreenState extends State<DirectorListScreen>
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF6366F1), // Indigo color
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: const Icon(
           Icons.sync_rounded, 
@@ -835,30 +701,15 @@ class _DirectorListScreenState extends State<DirectorListScreen>
         _handleExport();
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFBBF24),
-              Color(0xFFF59E0B),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFF59E0B).withOpacity(0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-              spreadRadius: -2,
-            ),
-          ],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: const Icon(
           Icons.ios_share_rounded, 
           size: 20, 
-          color: Color(0xFF451A03),
+          color: AppTheme.primary,
         ),
       ),
     );
@@ -1788,177 +1639,76 @@ class _DirectorListScreenState extends State<DirectorListScreen>
 
   Widget _buildDirectorCard(BuildContext context, Director d, int index, UserRole currentRole) {
     final hasIssue = d.hasNoDin || d.hasAddressMismatch;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 300 + (index * 30).clamp(0, 200)),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: hasIssue 
-            ? Border.all(color: AppTheme.warning.withOpacity(0.3))
-            : (isDark ? Border.all(color: const Color(0xFF334155)) : null),
-          boxShadow: isDark ? null : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+    return AppComponents.card(
+      onTap: () => _showDirectorDetail(d, currentRole),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          // Avatar with Zomato red circle
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.12),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _showDirectorDetail(d, currentRole),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  // Avatar
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: hasIssue
-                          ? [const Color(0xFFF59E0B), const Color(0xFFEF4444)]
-                          : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: Text(
-                        d.name.isNotEmpty ? d.name[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  // Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              textUtils.format(d.name),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-                              ),
-                            ),
-                            if (d.fingerprintTemplate != null) ...[
-                              const SizedBox(width: 6),
-                              Icon(Icons.fingerprint_rounded, color: Colors.green, size: 12),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            if (d.hasNoDin)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.error.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'No DIN',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.error,
-                                  ),
-                                ),
-                              )
-                            else
-                              Text(
-                                'DIN: ${d.din}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,
-                                ),
-                              ),
-                            if (d.hasAddressMismatch) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.warning.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'Mismatch',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.warning,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Biometric Enrollment Button
-                  if (currentRole == UserRole.admin || currentRole == UserRole.officeTeam)
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      onPressed: () => _enrollFingerprint(d),
-                      icon: Icon(
-                        d.fingerprintTemplate != null ? Icons.fingerprint_rounded : Icons.fingerprint,
-                        color: d.fingerprintTemplate != null ? Colors.green : (isDark ? Colors.white24 : Colors.grey.withOpacity(0.5)),
-                        size: 20,
-                      ),
-                      tooltip: d.fingerprintTemplate != null ? 'Re-enroll' : 'Enroll',
-                    ),
-                  // Arrow
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: hasIssue 
-                        ? AppTheme.warning.withOpacity(0.1)
-                        : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      Icons.chevron_right_rounded,
-                      color: hasIssue 
-                          ? AppTheme.warning 
-                          : (isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary),
-                      size: 20,
-                    ),
-                  ),
-                ],
+            child: Center(
+              child: Text(
+                d.name.isNotEmpty ? d.name[0].toUpperCase() : '?',
+                style: GoogleFonts.poppins(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
               ),
             ),
           ),
-        ),
+          const SizedBox(width: 16),
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  textUtils.format(d.name),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (d.hasNoDin)
+                      AppComponents.statusBadge('No DIN', AppTheme.error)
+                    else
+                      Text(
+                        'DIN: ${d.din}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    if (d.hasAddressMismatch) ...[
+                      const SizedBox(width: 8),
+                      AppComponents.statusBadge('Mismatch', AppTheme.warning),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: AppTheme.hintText,
+            size: 20,
+          ),
+        ],
       ),
     );
   }
@@ -1981,9 +1731,9 @@ class _DirectorListScreenState extends State<DirectorListScreen>
       backgroundColor: AppTheme.primary,
       elevation: 4,
       icon: const Icon(Icons.add_rounded, color: Colors.white),
-      label: const Text(
+      label: Text(
         'Add Director',
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           color: Colors.white,
           fontWeight: FontWeight.w700,
         ),

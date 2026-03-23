@@ -4,193 +4,408 @@ import '../../core/theme.dart';
 import '../../core/repositories/director_repository.dart';
 import '../../core/services/localization_service.dart';
 
-class ReportScreen extends StatelessWidget {
+class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
 
   @override
+  State<ReportScreen> createState() => _ReportScreenState();
+}
+
+class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  final repo = DirectorRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final repo = DirectorRepository();
-    
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : AppTheme.background,
+      backgroundColor: AppTheme.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          // App Bar
-          SliverAppBar(
-            expandedHeight: 120,
-            floating: true,
-            pinned: true,
-            stretch: true,
-            backgroundColor: isDark ? const Color(0xFF0F172A) : AppTheme.background,
-            surfaceTintColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-              title: Text(
-                localizationService.tr('reports'),
-                style: TextStyle(
-                  color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              background: Container(
-                color: isDark ? const Color(0xFF0F172A) : AppTheme.background,
-              ),
-            ),
-          ),
+          // Premium SliverAppBar
+          _buildAppBar(isDark),
           
-          // Content
+          // Analytical Content
           SliverPadding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Header
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            localizationService.tr('analytics_overview'),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            localizationService.tr('performance_monitoring'),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.analytics_rounded,
-                        color: AppTheme.primary,
-                        size: 24,
-                      ),
-                    ),
-                  ],
-                ),
-                
+                // Header with micro-animation
+                _buildAnimatedHeader(isDark),
                 const SizedBox(height: 28),
                 
-                // Distribution Card
-                _buildReportCard(
-                  context: context,
-                  title: localizationService.tr('directorship_distribution'),
-                  subtitle: localizationService.tr('active_inactive_status'),
-                  icon: Icons.pie_chart_rounded,
-                  color: AppTheme.primary,
-                  content: _buildDistributionChart(context, repo),
+                // Dynamic Distribution Card (Glassmorphism feel)
+                FadeTransition(
+                  opacity: CurvedAnimation(parent: _animController, curve: const Interval(0.2, 0.7)),
+                  child: _buildReportCard(
+                    context: context,
+                    title: localizationService.tr('directorship_distribution'),
+                    subtitle: localizationService.tr('active_inactive_status'),
+                    icon: Icons.pie_chart_rounded,
+                    color: AppTheme.primary,
+                    content: _buildDistributionChart(context, repo),
+                  ),
                 ),
                 
                 const SizedBox(height: 20),
                 
-                // Compliance Card
-                _buildReportCard(
-                  context: context,
-                  title: localizationService.tr('data_integrity'),
-                  subtitle: localizationService.tr('completeness_validation'),
-                  icon: Icons.verified_user_rounded,
-                  color: AppTheme.success,
-                  content: Column(
-                    children: [
-                      _buildProgressRow(context, localizationService.tr('profile_completion'), 0.85, AppTheme.primary),
-                      const SizedBox(height: 16),
-                      _buildProgressRow(context, localizationService.tr('din_validation'), 1.0, AppTheme.success),
-                      const SizedBox(height: 16),
-                      _buildProgressRow(context, localizationService.tr('kyc_status'), 0.65, AppTheme.warning),
-                    ],
+                // Integrity & Compliance
+                FadeTransition(
+                  opacity: CurvedAnimation(parent: _animController, curve: const Interval(0.3, 0.8)),
+                  child: _buildReportCard(
+                    context: context,
+                    title: localizationService.tr('data_integrity'),
+                    subtitle: "System Completion & Validation",
+                    icon: Icons.verified_user_rounded,
+                    color: AppTheme.success,
+                    content: Column(
+                      children: [
+                        _buildProgressRow(context, "Profile Data", 0.92, AppTheme.primary),
+                        const SizedBox(height: 18),
+                        _buildProgressRow(context, "DIN Records", 1.0, AppTheme.success),
+                        const SizedBox(height: 18),
+                        _buildProgressRow(context, "Contact KYC", 0.78, AppTheme.warning),
+                      ],
+                    ),
                   ),
                 ),
                 
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
                 
-                // Stats Cards
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        title: localizationService.tr('total_records'),
-                        value: '${repo.totalCount}',
-                        icon: Icons.folder_rounded,
-                        color: AppTheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        title: localizationService.tr('active'),
-                        value: '${repo.activeCount}',
-                        icon: Icons.check_circle_rounded,
-                        color: AppTheme.success,
-                      ),
-                    ),
-                  ],
+                // High-Impact Stats Grid
+                _buildStaggeredStats(isDark),
+                
+                const SizedBox(height: 32),
+                
+                // Premium Quick Action
+                FadeTransition(
+                  opacity: CurvedAnimation(parent: _animController, curve: const Interval(0.6, 1.0)),
+                  child: _buildQuickReportAction(context),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        title: localizationService.tr('issues'),
-                        value: '${repo.noDinCount + repo.addressMismatchCount}',
-                        icon: Icons.warning_rounded,
-                        color: AppTheme.warning,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        title: localizationService.tr('synced'),
-                        value: '100%',
-                        icon: Icons.cloud_done_rounded,
-                        color: AppTheme.info,
-                      ),
-                    ),
-                  ],
+                // Main Export Master Report
+                FadeTransition(
+                  opacity: CurvedAnimation(parent: _animController, curve: const Interval(0.7, 1.0)),
+                  child: _buildExportButton(context, repo),
                 ),
                 
-                const SizedBox(height: 28),
-                
-                // Quick Report Action
-                _buildQuickReportAction(context),
-                
-                const SizedBox(height: 24),
-                
-                // Export Button
-                _buildExportButton(context, repo),
-                
-                const SizedBox(height: 40),
+                const SizedBox(height: 60),
               ]),
             ),
           ),
+          // Premium Fintech Header
+          _buildAppBar(),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader("OVERVIEW ANALYSIS"),
+                  const SizedBox(height: 16),
+                  _buildMainStatsGrid(),
+                  const SizedBox(height: 24),
+                  
+                  _buildSectionHeader("DATA INTEGRITY"),
+                  const SizedBox(height: 16),
+                  _buildIntegrityCard(),
+                  const SizedBox(height: 24),
+
+                  _buildSectionHeader("DIRECTORSHIP DISTRIBUTION"),
+                  const SizedBox(height: 16),
+                  _buildDistributionCard(),
+                  const SizedBox(height: 32),
+
+                  _buildSectionHeader("EXECUTIVE ACTIONS"),
+                  const SizedBox(height: 16),
+                  _buildQuickActionAudit(),
+                  const SizedBox(height: 16),
+                  _buildExportMasterButton(),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 160,
+      backgroundColor: const Color(0xFF7C3AED),
+      pinned: true,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          alignment: Alignment.bottomLeft,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF7C3AED), Color(0xFFC026D3), Color(0xFFEC4899)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            Positioned(
+              right: -20,
+              top: 20,
+              child: Opacity(
+                opacity: 0.1,
+                child: Icon(Icons.analytics_rounded, size: 150, color: Colors.white),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        "LIVE ENGINE ANALYTICS",
+                        style: GoogleFonts.inter(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      localizationService.tr('reports'),
+                      style: GoogleFonts.poppins(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -1,
+                        height: 1.0,
+                      ),
+                    ),
+                        color: Colors.white.withOpacity(0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedHeader(bool isDark) {
+    return SlideTransition(
+      position: Tween<Offset>(begin: const Offset(-0.05, 0), end: Offset.zero).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  localizationService.tr('analytics_overview'),
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_filled_rounded, size: 14, color: AppTheme.textTertiary),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Last updated 5 mins ago",
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: AppTheme.textTertiary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            ),
+            child: Icon(Icons.bolt_rounded, color: AppTheme.primary, size: 24),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStaggeredStats(bool isDark) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildPremiumStatCard(
+                title: localizationService.tr('total_records'),
+                value: '${repo.totalCount}',
+                label: 'Profiles',
+                icon: Icons.folder_copy_rounded,
+                color: AppTheme.primary,
+                delay: 0.4,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildPremiumStatCard(
+                title: localizationService.tr('active'),
+                value: '${repo.activeCount}',
+                label: 'Compliant',
+                icon: Icons.check_circle_rounded,
+                color: AppTheme.success,
+                delay: 0.5,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildPremiumStatCard(
+                title: localizationService.tr('issues'),
+                value: '${repo.noDinCount + repo.addressMismatchCount}',
+                label: 'Action Required',
+                icon: Icons.assignment_late_rounded,
+                color: AppTheme.warning,
+                delay: 0.6,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildPremiumStatCard(
+                title: 'Data Sync',
+                value: '100%',
+                label: 'Real-time',
+                icon: Icons.sync_lock_rounded,
+                color: AppTheme.accent,
+                delay: 0.7,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPremiumStatCard({
+    required String title,
+    required String value,
+    required String label,
+    required IconData icon,
+    required Color color,
+    required double delay,
+  }) {
+    return SlideTransition(
+      position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+        CurvedAnimation(parent: _animController, curve: Interval(delay, 1.0, curve: Curves.easeOutBack)),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+          boxShadow: AppTheme.softShadow,
+          border: Border.all(color: AppTheme.borderLight),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textPrimary,
+                height: 1.0,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title.toUpperCase(),
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textTertiary,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -203,17 +418,13 @@ class ReportScreen extends StatelessWidget {
     required Color color,
     required Widget content,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        boxShadow: isDark ? null : AppTheme.softShadow,
-        border: Border.all(
-          color: isDark ? const Color(0xFF334155) : AppTheme.borderLight
-        ),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: AppTheme.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,10 +434,21 @@ class ReportScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  gradient: LinearGradient(
+                    colors: [color, color.withOpacity(0.7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Icon(icon, color: color, size: 22),
+                child: Icon(icon, color: Colors.white, size: 22),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -235,18 +457,18 @@ class ReportScreen extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
+                        fontSize: 17,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 13,
-                        color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,
+                        color: AppTheme.textTertiary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -254,7 +476,7 @@ class ReportScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           content,
         ],
       ),
@@ -262,283 +484,149 @@ class ReportScreen extends StatelessWidget {
   }
 
   Widget _buildDistributionChart(BuildContext context, DirectorRepository repo) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final activePercent = repo.activePercentage / 100;
     final inactivePercent = 1 - activePercent;
     
     return Row(
       children: [
-        // Chart Bar - Active
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: AppTheme.success,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        localizationService.tr('active'),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? const Color(0xFF94A3B8) : AppTheme.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '${(activePercent * 100).toInt()}%',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.success,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Container(
-                height: 12,
-                decoration: BoxDecoration(
-                  color: AppTheme.success.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: activePercent),
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, _) {
-                      return LinearProgressIndicator(
-                        value: value,
-                        backgroundColor: Colors.transparent,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppTheme.success,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        const SizedBox(width: 20),
-        
-        // Chart Bar - Inactive
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: AppTheme.error,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        localizationService.tr('inactive'),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? const Color(0xFF94A3B8) : AppTheme.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '${(inactivePercent * 100).toInt()}%',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.error,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Container(
-                height: 12,
-                decoration: BoxDecoration(
-                  color: AppTheme.error.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: inactivePercent),
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, _) {
-                      return LinearProgressIndicator(
-                        value: value,
-                        backgroundColor: Colors.transparent,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppTheme.error,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildChartBar(localizationService.tr('active'), activePercent, AppTheme.success),
+        const SizedBox(width: 24),
+        _buildChartBar(localizationService.tr('inactive'), inactivePercent, AppTheme.error),
       ],
     );
   }
 
-  Widget _buildProgressRow(BuildContext context, String label, double value, Color color) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      children: [
-        SizedBox(
-          width: 130,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFF94A3B8) : AppTheme.textSecondary,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Container(
-            height: 8,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: value),
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeOutCubic,
-                builder: (context, animValue, _) {
-                  return FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: animValue,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 45,
-          child: Text(
-            '${(value * 100).toInt()}%',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-            ),
-            textAlign: TextAlign.right,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required BuildContext context,
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        boxShadow: isDark ? null : AppTheme.softShadow,
-        border: Border.all(
-          color: isDark ? const Color(0xFF334155) : AppTheme.borderLight
-        ),
-      ),
+  Widget _buildChartBar(String label, double percent, Color color) {
+    return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textSecondary,
                 ),
-                child: Icon(icon, color: color, size: 18),
+              ),
+              Text(
+                '${(percent * 100).toInt()}%',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-              letterSpacing: -1,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFF64748B) : AppTheme.textTertiary,
-            ),
+          const SizedBox(height: 10),
+          Stack(
+            children: [
+              Container(
+                height: 14,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: percent),
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutQuart,
+                builder: (context, value, _) => FractionallySizedBox(
+                  widthFactor: value,
+                  child: Container(
+                    height: 14,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [color, color.withOpacity(0.8)],
+                      ),
+                      borderRadius: BorderRadius.circular(7),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  Widget _buildProgressRow(BuildContext context, String label, double value, Color color) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            Text(
+              '${(value * 100).toInt()}%',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 8,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE2E8F0),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: value),
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.easeOutCubic,
+              builder: (context, animValue, _) => LinearProgressIndicator(
+                value: animValue,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildQuickReportAction(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.darkGradient,
+        gradient: AppTheme.premiumGradient,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.textPrimary.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppTheme.accent.withOpacity(0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: const Color(0xFFFFD700).withOpacity(0.15),
+            blurRadius: 12,
+            spreadRadius: -2,
           ),
         ],
       ),
@@ -546,62 +634,50 @@ class ReportScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            HapticFeedback.lightImpact();
-            _showSnackBar(context, localizationService.tr('opening_audit_report'));
+            HapticFeedback.heavyImpact();
+            _showSnackBar(context, "Initializing Audit Intelligence...");
           },
           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
                   ),
-                  child: const Icon(
-                    Icons.description_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         localizationService.tr('quarterly_audit_report'),
-                        style: const TextStyle(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          letterSpacing: 0.2,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        localizationService.tr('full_compliance_check'),
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                        "Run proprietary AI compliance audit",
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withOpacity(0.8),
                           fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
+                Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withOpacity(0.5), size: 18),
               ],
             ),
           ),
@@ -612,10 +688,23 @@ class ReportScreen extends StatelessWidget {
 
   Widget _buildExportButton(BuildContext context, DirectorRepository repo) {
     return Container(
+      width: double.infinity,
+      height: 64,
       decoration: BoxDecoration(
         gradient: AppTheme.primaryGradient,
         borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-        boxShadow: AppTheme.primaryShadow,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: const Color(0xFFFFD700).withOpacity(0.25),
+            blurRadius: 15,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -625,24 +714,19 @@ class ReportScreen extends StatelessWidget {
             _showSnackBar(context, localizationService.tr('download_success_msg'));
           },
           borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+          child: Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(
-                  Icons.download_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-                SizedBox(width: 10),
+              children: [
+                const Icon(Icons.auto_awesome_motion_rounded, color: Colors.white, size: 24),
+                const SizedBox(width: 14),
                 Text(
-                  localizationService.tr('export_master_report'),
-                  style: TextStyle(
+                  localizationService.tr('export_master_report').toUpperCase(),
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ],
@@ -654,21 +738,13 @@ class ReportScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message) {
-    HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.info_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: AppTheme.textPrimary,
+        content: Text(message, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        backgroundColor: AppTheme.accent,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }

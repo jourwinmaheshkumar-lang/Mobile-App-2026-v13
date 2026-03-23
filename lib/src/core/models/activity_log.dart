@@ -16,6 +16,7 @@ enum EntityType {
   campaign,
   system,
   form,
+  project,
 }
 
 class ActivityLog {

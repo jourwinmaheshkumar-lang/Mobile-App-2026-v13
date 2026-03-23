@@ -5,6 +5,8 @@ import '../../core/models/director.dart';
 import '../../core/repositories/director_repository.dart';
 import '../../core/services/localization_service.dart';
 import '../../core/utils/company_data.dart';
+import 'package:director_management/src/core/models/office.dart';
+import 'package:director_management/src/core/repositories/office_repository.dart';
 
 class AddDirectorSheet extends StatefulWidget {
   final Director? director;
@@ -42,6 +44,13 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
   bool _saving = false;
   List<CompanyDetail> _assignedCompanies = [];
   
+  // New organizational fields
+  String? _selectedOfficeId;
+  String? _selectedOfficeName;
+  late TextEditingController _officePostingController;
+  bool _isSpecial = false;
+  String? _specialRole;
+
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
 
@@ -62,6 +71,12 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
     _emudhraAccountDetailsController = TextEditingController(text: widget.director?.emudhraAccountDetails);
     _status = widget.director?.status ?? 'Active';
     _assignedCompanies = List.from(widget.director?.companies ?? []);
+    
+    _selectedOfficeId = widget.director?.officeId;
+    _selectedOfficeName = widget.director?.officeName;
+    _officePostingController = TextEditingController(text: widget.director?.officePosting);
+    _isSpecial = widget.director?.isSpecial ?? false;
+    _specialRole = widget.director?.specialRole;
     
     _animController = AnimationController(
       vsync: this,
@@ -90,6 +105,7 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
     _emailPhoneController.dispose();
     _idbiAccountDetailsController.dispose();
     _emudhraAccountDetailsController.dispose();
+    _officePostingController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -136,6 +152,11 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
       emudhraAccountDetails: _emudhraAccountDetailsController.text,
       status: _status,
       companies: _assignedCompanies,
+      officeId: _selectedOfficeId,
+      officeName: _selectedOfficeName,
+      officePosting: _officePostingController.text,
+      isSpecial: _isSpecial,
+      specialRole: _specialRole,
     );
 
     try {
@@ -198,31 +219,35 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1E293B) : Colors.white,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Add Company Assignment', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text(
+            'Add Company Assignment', 
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1A1A1A))
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Select Company', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 8),
+                const Text('SELECT COMPANY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF999999), letterSpacing: 1.0)),
+                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF0F172A) : Colors.grey[100],
+                    color: const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: selectedCompany,
-                      hint: const Text('Select from 17 companies'),
+                      hint: const Text('Select from 17 companies', style: TextStyle(fontSize: 14, color: Color(0xFFAAAAAA))),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFE8524A)),
                       items: CompanyData.companies.map((c) => DropdownMenuItem(
                         value: c.companyName,
-                        child: Text(c.companyName, style: const TextStyle(fontSize: 12)),
+                        child: Text(c.companyName, style: const TextStyle(fontSize: 13, color: Color(0xFF1A1A1A))),
                       )).toList(),
                       onChanged: (val) => setDialogState(() {
                         selectedCompany = val;
@@ -231,9 +256,9 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                const Text('OR Manual Entry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 8),
+                const SizedBox(height: 20),
+                const Text('OR MANUALLY ENTER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF999999), letterSpacing: 1.0)),
+                const SizedBox(height: 10),
                 _buildSimpleField('Company Name', manualCompanyController),
                 const SizedBox(height: 16),
                 _buildSimpleField('Designation', designationController),
@@ -243,7 +268,10 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+            TextButton(
+              onPressed: () => Navigator.pop(context), 
+              child: const Text('CANCEL', style: TextStyle(color: Color(0xFF888888), fontWeight: FontWeight.bold))
+            ),
             ElevatedButton(
               onPressed: () {
                 final name = selectedCompany ?? manualCompanyController.text;
@@ -258,7 +286,13 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                 }
                 Navigator.pop(context);
               },
-              child: const Text('ADD'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE8524A),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -267,32 +301,37 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
   }
 
   Widget _buildSimpleField(String label, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
+      style: const TextStyle(fontSize: 14, color: Color(0xFF1A1A1A), fontWeight: FontWeight.w500),
       decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontSize: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        hintText: label,
+        hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFAAAAAA)),
+        filled: true,
+        fillColor: const Color(0xFFF5F5F5),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE8524A), width: 1.5),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Requirements specify white background, so we don't use isDark here for the base colors
+    // as per "White background" in "Overall Modal / Card" section.
     
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.5,
-      maxChildSize: 0.95,
+      maxChildSize: 0.96,
       builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: isDark 
-              ? const Border(top: BorderSide(color: Color(0xFF334155))) 
-              : null,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
@@ -302,29 +341,27 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark 
-                    ? const Color(0xFF475569) 
-                    : AppTheme.borderLight,
+                color: const Color(0xFFE0E0E0),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             
             // Header
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: AppTheme.primaryShadow,
+                      color: const Color(0xFFE8524A),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       widget.director == null ? Icons.person_add_rounded : Icons.edit_rounded,
                       color: Colors.white,
-                      size: 22,
+                      size: 24,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -334,23 +371,22 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                       children: [
                         Text(
                           widget.director == null 
-                            ? localizationService.tr('add_director') 
-                            : localizationService.tr('edit_director'),
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-                            letterSpacing: -0.5,
+                            ? 'Add Director'
+                            : 'Edit Director',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A1A),
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           widget.director == null 
-                            ? localizationService.tr('create_new_record')
-                            : localizationService.tr('update_info'),
-                          style: TextStyle(
+                            ? 'Create a new director record'
+                            : 'Update director information',
+                          style: const TextStyle(
                             fontSize: 13,
-                            color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,
+                            color: Color(0xFF888888),
                           ),
                         ),
                       ],
@@ -358,35 +394,37 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context), 
-                    icon: const Icon(Icons.close_rounded)
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF1A1A1A)),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
             ),
             
-            Container(height: 1, color: isDark ? const Color(0xFF334155) : AppTheme.borderLight),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
             
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                   physics: const BouncingScrollPhysics(),
                   children: [
                     // IDENTIFICATION
-                    _buildSectionHeader(localizationService.tr('identification'), Icons.badge_rounded),
+                    _buildSectionHeader('IDENTIFICATION', Icons.badge_rounded),
                     _buildInputField(
-                      label: localizationService.tr('full_name'),
-                      hint: localizationService.tr('enter_full_name'),
+                      label: 'Full Name',
+                      hint: 'Enter full name',
                       controller: _nameController,
                       icon: Icons.person_outline_rounded,
                       required: true,
                     ),
                     const SizedBox(height: 16),
                     _buildInputField(
-                      label: localizationService.tr('din_number'),
-                      hint: localizationService.tr('enter_din'),
+                      label: 'DIN Number',
+                      hint: 'Enter 7-8 digit DIN',
                       controller: _dinController,
                       icon: Icons.badge_outlined,
                       keyboardType: TextInputType.number,
@@ -394,25 +432,59 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                     
                     // COMPANY ASSIGNMENT
                     _buildSectionHeader('COMPANY ASSIGNMENT', Icons.business_center_rounded),
-                    ..._assignedCompanies.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final c = entry.value;
-                      return ListTile(
-                        leading: const Icon(Icons.business_rounded, color: AppTheme.primary),
-                        title: Text(c.companyName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                        subtitle: Text('${c.designation} (${c.appointmentDate})', style: const TextStyle(fontSize: 11)),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.red, size: 20),
-                          onPressed: () => setState(() => _assignedCompanies.removeAt(index)),
-                        ),
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                      );
-                    }),
+                    if (_assignedCompanies.isNotEmpty) ...[
+                      ..._assignedCompanies.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final c = entry.value;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9F9F9),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFEEEEEE)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.business_rounded, color: Color(0xFFE8524A), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(c.companyName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1A1A1A))),
+                                    Text('${c.designation} (${c.appointmentDate})', style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline_rounded, color: Color(0xFFE8524A), size: 18),
+                                onPressed: () => setState(() => _assignedCompanies.removeAt(index)),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                    ],
+                    
                     TextButton.icon(
                       onPressed: _addCompany,
-                      icon: const Icon(Icons.add_circle_outline_outlined, size: 18),
-                      label: const Text('Add Company Assignment'),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        alignment: Alignment.centerLeft,
+                        foregroundColor: const Color(0xFFE8524A),
+                      ),
+                      icon: const Icon(Icons.add_circle_outline, size: 18),
+                      label: const Text(
+                        'Add Company Assignment',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 16),
@@ -420,7 +492,7 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                       children: [
                         Expanded(
                           child: _buildInputField(
-                            label: localizationService.tr('pan_number'),
+                            label: 'PAN Number',
                             hint: 'ABCDE1234F',
                             controller: _panController,
                             icon: Icons.credit_card_outlined,
@@ -429,7 +501,7 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildInputField(
-                            label: localizationService.tr('aadhaar_number'),
+                            label: 'Aadhaar Number',
                             hint: '1234 5678 9012',
                             controller: _aadhaarNumberController,
                             icon: Icons.fingerprint_outlined,
@@ -440,9 +512,9 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                     ),
                     
                     // CONTACT
-                    _buildSectionHeader(localizationService.tr('contact_info'), Icons.phone_rounded),
+                    _buildSectionHeader('CONTACT INFORMATION', Icons.phone_rounded),
                     _buildInputField(
-                      label: localizationService.tr('email_id'),
+                      label: 'Email ID',
                       hint: 'email@example.com',
                       controller: _emailController,
                       icon: Icons.email_outlined,
@@ -450,8 +522,8 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                     ),
                     const SizedBox(height: 16),
                     _buildInputField(
-                      label: localizationService.tr('bank_linked_phone'),
-                      hint: localizationService.tr('enter_phone'),
+                      label: 'Bank Linked Phone',
+                      hint: 'Enter phone number',
                       controller: _bankLinkedPhoneController,
                       icon: Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
@@ -461,8 +533,8 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                       children: [
                         Expanded(
                           child: _buildInputField(
-                            label: localizationService.tr('aadhaar_pan_phone'),
-                            hint: localizationService.tr('phone_number'),
+                            label: 'Aadhaar/PAN Phone',
+                            hint: 'Phone number',
                             controller: _aadhaarPanPhoneController,
                             icon: Icons.phone_android_outlined,
                             keyboardType: TextInputType.phone,
@@ -471,8 +543,8 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildInputField(
-                            label: localizationService.tr('email_linked_phone'),
-                            hint: localizationService.tr('phone_number'),
+                            label: 'Email Linked Phone',
+                            hint: 'Phone number',
                             controller: _emailPhoneController,
                             icon: Icons.phone_iphone_outlined,
                             keyboardType: TextInputType.phone,
@@ -482,51 +554,150 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
                     ),
                     
                     // ADDRESS
-                    _buildSectionHeader(localizationService.tr('address_info'), Icons.location_on_rounded),
+                    _buildSectionHeader('ADDRESS INFORMATION', Icons.location_on_rounded),
                     _buildMultiLineField(
-                      label: localizationService.tr('aadhaar_address'),
-                      hint: localizationService.tr('enter_address_aadhaar'),
+                      label: 'Aadhaar Address',
+                      hint: 'Enter address as per Aadhaar',
                       controller: _aadhaarAddressController,
                       icon: Icons.home_outlined,
                     ),
                     const SizedBox(height: 16),
                     _buildMultiLineField(
-                      label: localizationService.tr('residential_address'),
-                      hint: localizationService.tr('enter_residential_address'),
+                      label: 'Residential Address',
+                      hint: 'Enter current residential address',
                       controller: _residentialAddressController,
                       icon: Icons.location_on_outlined,
                     ),
                     
                     // BANK DETAILS
-                    _buildSectionHeader(localizationService.tr('idbi_bank_details'), Icons.account_balance_rounded),
+                    _buildSectionHeader('IDBI BANK DETAILS', Icons.account_balance_rounded),
                     _buildMultiLineField(
-                      label: localizationService.tr('account_details'),
-                      hint: localizationService.tr('enter_account_details_idbi'),
+                      label: 'Account Details',
+                      hint: 'Enter account number, customer ID, etc.',
                       controller: _idbiAccountDetailsController,
                       icon: Icons.credit_card_outlined,
                     ),
                     
-                    _buildSectionHeader(localizationService.tr('emudhra_details'), Icons.account_balance_wallet_rounded),
+                    _buildSectionHeader('eMUDHRA ACCOUNT DETAILS', Icons.account_balance_wallet_rounded),
                     _buildMultiLineField(
-                      label: localizationService.tr('account_details'),
-                      hint: localizationService.tr('enter_account_details_emudhra'),
+                      label: 'Account Details',
+                      hint: 'Enter A/c number, bank name, IFSC, branch',
                       controller: _emudhraAccountDetailsController,
                       icon: Icons.account_balance_wallet_outlined,
                     ),
                     
                     // STATUS
-                    _buildSectionHeader(localizationService.tr('status_label'), Icons.toggle_on_rounded),
+                    _buildSectionHeader('STATUS', Icons.toggle_on_rounded),
                     Row(
                       children: [
-                        Expanded(child: _buildStatusChip(localizationService.tr('active'), AppTheme.success)),
+                        Expanded(child: _buildStatusChip('Active', const Color(0xFF4CAF50))),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildStatusChip(localizationService.tr('inactive'), AppTheme.error)),
+                        Expanded(child: _buildStatusChip('Inactive', const Color(0xFFE8524A))),
                       ],
+                    ),
+
+                    // ORGANIZATIONAL ROLE
+                    _buildSectionHeader('ORGANIZATIONAL ROLE', Icons.stars_rounded),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F5F5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.workspace_premium_rounded, color: Color(0xFFEAB308), size: 20),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Mark as Special Director',
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF1A1A1A)),
+                            ),
+                          ),
+                          Switch(
+                            value: _isSpecial,
+                            onChanged: (val) => setState(() => _isSpecial = val),
+                            activeColor: const Color(0xFFEAB308),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_isSpecial) ...[
+                      const SizedBox(height: 16),
+                      const Text('SPECIAL ROLE / DESIGNATION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF999999), letterSpacing: 1.0)),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: _specialRole,
+                            hint: const Text('Select Role', style: TextStyle(fontSize: 14, color: Color(0xFFAAAAAA))),
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFE8524A)),
+                            items: [
+                              'Chairman', 'Corporate Secretary', 'Dejour Group Charman', 
+                              'Matrix Group Chairman', 'Jourwrin Group Charman', 'Group Advisor'
+                            ].map((role) => DropdownMenuItem<String>(
+                              value: role,
+                              child: Text(role, style: const TextStyle(fontSize: 13, color: Color(0xFF1A1A1A))),
+                            )).toList(),
+                            onChanged: (val) => setState(() => _specialRole = val),
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    // OFFICE ASSIGNMENT
+                    _buildSectionHeader('OFFICE ASSIGNMENT', Icons.business_rounded),
+                    const Text('ASSIGN TO OFFICE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF999999), letterSpacing: 1.0)),
+                    const SizedBox(height: 10),
+                    StreamBuilder<List<Office>>(
+                      stream: OfficeRepository().officesStream,
+                      builder: (context, snapshot) {
+                        final offices = snapshot.data ?? [];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F5F5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              value: _selectedOfficeId,
+                              hint: const Text('Select Office', style: TextStyle(fontSize: 14, color: Color(0xFFAAAAAA))),
+                              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFE8524A)),
+                              items: offices.map((o) => DropdownMenuItem<String>(
+                                value: o.id,
+                                child: Text(o.name, style: const TextStyle(fontSize: 13, color: Color(0xFF1A1A1A))),
+                              )).toList(),
+                              onChanged: (val) {
+                                final office = offices.firstWhere((o) => o.id == val);
+                                setState(() {
+                                  _selectedOfficeId = val;
+                                  _selectedOfficeName = office.name;
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInputField(
+                      label: 'Office Posting / Designation',
+                      hint: 'e.g. Senior Manager, Accountant',
+                      controller: _officePostingController,
+                      icon: Icons.work_outline_rounded,
                     ),
                     
                     const SizedBox(height: 32),
                     _buildSaveButton(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
@@ -539,24 +710,25 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
 
   Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(top: 24, bottom: 16),
+      padding: const EdgeInsets.only(top: 20, bottom: 12),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: Color(0xFFFDECEA),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppTheme.primary, size: 14),
+            child: Icon(icon, color: const Color(0xFFE8524A), size: 18),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Text(
-            title,
-            style: TextStyle(
+            title.toUpperCase(),
+            style: const TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF64748B) : AppTheme.textTertiary,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF999999),
               letterSpacing: 1.2,
             ),
           ),
@@ -580,42 +752,49 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
           children: [
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
-                color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFCBD5E1) : AppTheme.textSecondary,
+                color: Color(0xFF1A1A1A),
               ),
             ),
             if (required) ...[
-              const SizedBox(width: 4),
-              Text('*', style: TextStyle(color: AppTheme.error, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 2),
+              const Text('*', style: TextStyle(color: Color(0xFFE8524A), fontWeight: FontWeight.bold)),
             ],
           ],
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF0F172A) : AppTheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-            border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF334155) : AppTheme.borderLight),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: Color(0xFF1A1A1A),
           ),
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
-              color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF5F5F5),
+            prefixIcon: Icon(icon, size: 20, color: const Color(0xFFE8524A)),
+            hintText: hint,
+            hintStyle: const TextStyle(
+              color: Color(0xFFAAAAAA),
+              fontWeight: FontWeight.normal,
+              fontSize: 14,
             ),
-            decoration: InputDecoration(
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Icon(icon, size: 20, color: AppTheme.primary),
-              ),
-              hintText: hint,
-              hintStyle: TextStyle(color: AppTheme.textTertiary, fontWeight: FontWeight.w400, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE8524A), width: 1.5),
             ),
           ),
         ),
@@ -634,33 +813,46 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 13,
-            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFCBD5E1) : AppTheme.textSecondary,
+            color: Color(0xFF1A1A1A),
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF0F172A) : AppTheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-            border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF334155) : AppTheme.borderLight),
+        TextFormField(
+          controller: controller,
+          maxLines: 3,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: Color(0xFF1A1A1A),
           ),
-          child: TextField(
-            controller: controller,
-            maxLines: 4,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
-              height: 1.5,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF5F5F5),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.only(bottom: 30), // Align icon with top of multi-line
+              child: Icon(icon, size: 20, color: const Color(0xFFE8524A)),
             ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: AppTheme.textTertiary, fontWeight: FontWeight.w400, fontSize: 14),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
+            hintText: hint,
+            hintStyle: const TextStyle(
+              color: Color(0xFFAAAAAA),
+              fontWeight: FontWeight.normal,
+              fontSize: 14,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE8524A), width: 1.5),
             ),
           ),
         ),
@@ -670,35 +862,30 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
 
   Widget _buildStatusChip(String status, Color color) {
     final isSelected = _status == status;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() => _status = status);
-        },
-        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: isSelected ? color : color.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-            border: Border.all(color: isSelected ? color : color.withOpacity(0.3), width: isSelected ? 2 : 1),
-            boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4))] : null,
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _status = status);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? color : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? color : const Color(0xFFEEEEEE),
+            width: isSelected ? 1.5 : 1,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isSelected) ...[
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                status.toUpperCase(),
-                style: TextStyle(color: isSelected ? Colors.white : color, fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 0.5),
-              ),
-            ],
+        ),
+        child: Center(
+          child: Text(
+            status,
+            style: TextStyle(
+              color: isSelected ? Colors.white : const Color(0xFF666666),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
         ),
       ),
@@ -706,42 +893,41 @@ class _AddDirectorSheetState extends State<AddDirectorSheet>
   }
 
   Widget _buildSaveButton() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: _saving ? null : AppTheme.primaryGradient,
-        color: _saving ? AppTheme.primary.withOpacity(0.7) : null,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-        boxShadow: _saving ? null : AppTheme.primaryShadow,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _saving ? null : _save,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Center(
-              child: _saving
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(widget.director == null ? Icons.add_rounded : Icons.save_rounded, color: Colors.white, size: 22),
-                      const SizedBox(width: 10),
-                      Text(
-                        widget.director == null ? localizationService.tr('create_director') : localizationService.tr('update_director'),
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.3),
-                      ),
-                    ],
-                  ),
-            ),
+        color: const Color(0xFFE8524A),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE8524A).withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
+        ],
+      ), // fixed comma
+      child: ElevatedButton(
+        onPressed: _saving ? null : _save,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
+        child: _saving
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+            )
+          : Text(
+              widget.director == null ? 'Create Director' : 'Update Director',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
       ),
     );
   }

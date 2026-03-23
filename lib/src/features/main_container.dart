@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/services/localization_service.dart';
 import '../core/services/auth_service.dart';
@@ -140,26 +141,16 @@ class _MainContainerState extends State<MainContainer>
   }
 
   Widget _buildBottomNavBar(List<_NavItem> navItems) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        border: isDark 
-            ? Border(top: BorderSide(color: const Color(0xFF334155), width: 1))
-            : null,
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Color(0xFFF0F0F0), width: 1),
+        ),
       ),
       child: SafeArea(
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: SizedBox(
+          height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(
@@ -174,51 +165,37 @@ class _MainContainerState extends State<MainContainer>
 
   Widget _buildNavItem(_NavItem item, int index) {
     final isSelected = index == _currentIndex;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final inactiveColor = isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary;
-    final accentColor = isDark ? const Color(0xFF818CF8) : AppTheme.primary;
+    const inactiveColor = Color(0xFFBDBDBD);
+    const accentColor = AppTheme.primary;
     
     return Expanded(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _onTabTapped(index),
-          borderRadius: BorderRadius.circular(12),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? accentColor.withOpacity(0.15)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isSelected ? item.activeIcon : item.icon,
-                  size: 22,
+          splashColor: accentColor.withOpacity(0.1),
+          highlightColor: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSelected ? item.activeIcon : item.icon,
+                size: 24,
+                color: isSelected ? accentColor : inactiveColor,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item.label,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected ? accentColor : inactiveColor,
+                  letterSpacing: 0.1,
                 ),
-                const SizedBox(height: 2),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    item.label,
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? accentColor : inactiveColor,
-                    ),
-                    maxLines: 1,
-                  ),
-                ),
-              ],
-            ),
+                maxLines: 1,
+              ),
+            ],
           ),
         ),
       ),

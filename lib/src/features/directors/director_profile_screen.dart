@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/models/director.dart';
 import '../../core/models/user.dart';
 import '../../core/services/auth_service.dart';
@@ -161,49 +162,114 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
                 return const Center(child: Text('No director profile linked to this account.'));
               }
 
-              return CustomScrollView(
-                slivers: [
-                  _buildHeader(director),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionTitle('Personal Information'),
-                          _buildInfoCard([
-                            _buildInfoTile('DIN', director.din, AppIcons.info),
-                            _buildInfoTile('Aadhaar', director.aadhaarNumber, AppIcons.document),
-                            _buildInfoTile('PAN', director.pan, AppIcons.document),
-                            _buildInfoTile('Email', director.email, AppIcons.notification),
-                          ]),
-                          const SizedBox(height: 24),
-                          _buildSectionTitle('Contact Details'),
-                          _buildInfoCard([
-                            _buildInfoTile('Bank Linked Phone', director.bankLinkedPhone, AppIcons.search),
-                            _buildInfoTile('Aadhaar/PAN Linked', director.aadhaarPanLinkedPhone, AppIcons.search),
-                            _buildInfoTile('Email Linked Phone', director.emailLinkedPhone, AppIcons.search),
-                          ]),
-                          const SizedBox(height: 24),
-                          _buildSectionTitle('Addresses'),
-                          _buildInfoCard([
-                            _buildInfoTile('Aadhaar Address', director.aadhaarAddress, AppIcons.home),
-                            _buildInfoTile('Residential Address', director.residentialAddress, AppIcons.home),
-                          ]),
-                          const SizedBox(height: 24),
-                          _buildSectionTitle('Company Assignments'),
-                          if (director.companies.isEmpty)
-                            const Text('No companies assigned.')
-                          else
-                            ...director.companies.map((c) => _buildCompanyCard(c)),
-                          const SizedBox(height: 40),
-                          _buildRequestButton(director, user),
-                          const SizedBox(height: 100),
-                        ],
+              return Container(
+                color: AppTheme.background,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    _buildHeader(director),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (director.isSpecial) ...[
+                              _buildSectionTitle('Special Status'),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFEAB308), Color(0xFFCA8A04)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFEAB308).withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.stars_rounded, color: Colors.white, size: 28),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            director.specialRole ?? 'Special Director',
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Core Management Group Member',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white.withOpacity(0.8),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+
+                            _buildSectionTitle('Organizational Placement'),
+                            _buildInfoCard([
+                              _buildInfoTile('Office', director.officeName ?? 'Not Assigned', Icons.business_rounded),
+                              _buildInfoTile('Posting', director.officePosting ?? 'Not Assigned', Icons.work_outline_rounded),
+                            ]),
+                            const SizedBox(height: 24),
+
+                            _buildSectionTitle('Personal Information'),
+                            _buildInfoCard([
+                              _buildInfoTile('DIN', director.din, Icons.fingerprint_rounded),
+                              _buildInfoTile('Aadhaar', director.aadhaarNumber, Icons.badge_outlined),
+                              _buildInfoTile('PAN', director.pan, Icons.assignment_ind_outlined),
+                              _buildInfoTile('Email', director.email, Icons.email_outlined),
+                            ]),
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('Contact Details'),
+                            _buildInfoCard([
+                              _buildInfoTile('Bank Phone', director.bankLinkedPhone, Icons.phone_android_rounded),
+                              _buildInfoTile('Aadhaar Phone', director.aadhaarPanLinkedPhone, Icons.phone_iphone_rounded),
+                              _buildInfoTile('Secondary Phone', director.emailLinkedPhone, Icons.contact_phone_outlined),
+                            ]),
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('Addresses'),
+                            _buildInfoCard([
+                              _buildInfoTile('Aadhaar Address', director.aadhaarAddress, Icons.location_on_outlined),
+                              _buildInfoTile('Residential Address', director.residentialAddress, Icons.home_outlined),
+                            ]),
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('Company Assignments'),
+                            if (director.companies.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Text('No companies assigned.', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+                              )
+                            else
+                              ...director.companies.map((c) => _buildCompanyCard(c)),
+                            const SizedBox(height: 40),
+                            _buildRequestButton(director, user),
+                            const SizedBox(height: 100),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           );
@@ -214,26 +280,29 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
 
   Widget _buildHeader(Director director) {
     return SliverAppBar(
-      expandedHeight: 200,
-      pinned: true,
-      backgroundColor: const Color(0xFF1a1a2e),
+      expandedHeight: 230,
+      pinned: false,
+      floating: true,
+      snap: true,
+      backgroundColor: AppTheme.primary,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
-            ),
+            gradient: AppTheme.premiumGradient,
           ),
           child: Stack(
             children: [
               Positioned(
-                right: -20,
-                bottom: -20,
+                right: -30,
+                top: -30,
                 child: Opacity(
                   opacity: 0.1,
-                  child: Image.asset('assets/icons/profile_3d.png', width: 200, height: 200),
+                  child: Icon(Icons.account_circle_rounded, size: 200, color: Colors.white),
                 ),
               ),
               Center(
@@ -245,25 +314,47 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                        border: Border.all(color: AppTheme.warning, width: 3),
                       ),
                       child: CircleAvatar(
-                        radius: 40,
+                        radius: 45,
                         backgroundColor: Colors.white.withOpacity(0.2),
                         child: Text(
-                          director.name.isNotEmpty ? director.name[0] : '?',
-                          style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                          director.name.isNotEmpty ? director.name[0].toUpperCase() : '?',
+                          style: GoogleFonts.poppins(
+                            fontSize: 36,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Text(
                       director.name,
-                      style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                    Text(
-                      'Director Profile',
-                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Official Director Portfolio',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -280,11 +371,11 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
       padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Text(
         title.toUpperCase(),
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade600,
-          letterSpacing: 1.2,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.textSecondary,
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -293,11 +384,11 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
   Widget _buildInfoCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: AppTheme.cardSurface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -307,7 +398,7 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
     );
   }
 
-  Widget _buildInfoTile(String label, String value, String iconPath) {
+  Widget _buildInfoTile(String label, String value, IconData icon) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -315,20 +406,32 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
+              color: AppTheme.primary.withOpacity(0.08),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Image.asset(iconPath, width: 24, height: 24),
+            child: Icon(icon, color: AppTheme.primary, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  label.toUpperCase(), 
+                  style: GoogleFonts.poppins(
+                    color: AppTheme.textSecondary, 
+                    fontSize: 9, 
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  )
+                ),
                 Text(
                   value.isEmpty ? 'Not Provided' : value,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  style: GoogleFonts.inter(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w600, 
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -343,22 +446,40 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(15),
+        color: AppTheme.cardSurface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.business_rounded, color: AppTheme.primary),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.business_rounded, color: AppTheme.primary, size: 20),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(company.companyName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(
-                  '${company.designation} • Joined: ${company.appointmentDate}',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  company.companyName, 
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                  )
+                ),
+                Text(
+                  '${company.designation} • Since ${company.appointmentDate}',
+                  style: GoogleFonts.inter(
+                    color: AppTheme.textSecondary, 
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -373,26 +494,30 @@ class _DirectorProfileScreenState extends State<DirectorProfileScreen> {
       child: GestureDetector(
         onTap: () => _showRequestDialog(director, user),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+            gradient: AppTheme.primaryGradient,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
+                color: AppTheme.primary.withOpacity(0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.edit_note_rounded, color: Colors.white),
-              SizedBox(width: 10),
+              const Icon(Icons.edit_note_rounded, color: Colors.white),
+              const SizedBox(width: 10),
               Text(
                 'Request Detail Change',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
             ],
           ),

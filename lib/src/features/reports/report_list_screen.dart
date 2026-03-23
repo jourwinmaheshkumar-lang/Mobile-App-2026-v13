@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../core/services/localization_service.dart';
 import '../../core/models/report.dart';
@@ -15,8 +16,7 @@ class ReportListScreen extends StatefulWidget {
   State<ReportListScreen> createState() => _ReportListScreenState();
 }
 
-class _ReportListScreenState extends State<ReportListScreen> 
-    with SingleTickerProviderStateMixin {
+class _ReportListScreenState extends State<ReportListScreen> with SingleTickerProviderStateMixin {
   final _repo = ReportRepository();
   final _directorRepo = DirectorRepository();
   late AnimationController _animController;
@@ -27,7 +27,7 @@ class _ReportListScreenState extends State<ReportListScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1000),
     );
     _animController.forward();
     _loadTotalDirectors();
@@ -50,255 +50,59 @@ class _ReportListScreenState extends State<ReportListScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    
     return Scaffold(
-      backgroundColor: scaffoldBg,
+      backgroundColor: const Color(0xFFF8F9FE), // Premium light grey
       body: StreamBuilder<List<Report>>(
         stream: _repo.reportsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF10B981),
-                strokeWidth: 2,
-              ),
-            );
+            return const Center(child: CircularProgressIndicator(color: Color(0xFF7C3AED)));
           }
 
-          if (snapshot.hasError) {
-            return _buildErrorState(snapshot.error.toString());
-          }
-
+          if (snapshot.hasError) return _buildErrorState(snapshot.error.toString());
           final reports = snapshot.data ?? [];
-
-          if (reports.isEmpty) {
-            return _buildEmptyState();
-          }
+          if (reports.isEmpty) return _buildEmptyState();
 
           return CustomScrollView(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
+            physics: const BouncingScrollPhysics(),
             slivers: [
-          // 170px Fintech-Grade Obsidian Header with Dual Mesh Gradient
-          SliverAppBar(
-            expandedHeight: 170,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: const Color(0xFF0F172A),
-            surfaceTintColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Layer 1: Base Obsidian / Dark Surface
-                  Container(color: isDark ? const Color(0xFF020617) : const Color(0xFF0F172A)),
-                  // Layer 2: Mesh Radial Gradient (Top Right)
-                  Positioned(
-                    top: -100,
-                    right: -50,
-                    child: Container(
-                      width: 400,
-                      height: 400,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            (isDark ? const Color(0xFF1E293B) : const Color(0xFF1E293B)).withOpacity(0.8),
-                            (isDark ? const Color(0xFF020617) : const Color(0xFF0F172A)).withOpacity(0.0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Layer 3: Subtle Emerald Ambient Glow (Bottom Left)
-                  Positioned(
-                    bottom: -50,
-                    left: -50,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            const Color(0xFF10B981).withOpacity(isDark ? 0.08 : 0.05),
-                            (isDark ? const Color(0xFF020617) : const Color(0xFF0F172A)).withOpacity(0.0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Content aligned precisely to bottom
-                  Positioned(
-                    bottom: 20,
-                    left: 24,
-                    right: 24,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                localizationService.tr('reports'),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 32,
-                                  letterSpacing: -1.5,
-                                  color: Colors.white,
-                                  height: 1.0,
-                                ),
-                              ),
-                            ),
-                            // Compact + Button with Vibrant Glow
-                            GestureDetector(
-                              onTap: () {
-                                HapticFeedback.mediumImpact();
-                                _showCreateReportSheet();
-                              },
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [Color(0xFF10B981), Color(0xFF059669)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(15),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF10B981).withOpacity(0.4),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 8),
-                                      spreadRadius: -2,
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.add_rounded,
-                                  size: 28,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        // Solid Assignments Pill
-                        GestureDetector(
-                          onTap: () {},
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withOpacity(0.05)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'ASSIGNMENTS',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 14,
-                                  color: Colors.white.withOpacity(0.4),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+              // Premium Fintech Header
+              _buildAppBar(),
 
-          // Glassmorphic Segmented Control / Tabs
-          SliverToBoxAdapter(
-            child: Container(
-              color: isDark ? const Color(0xFF020617) : const Color(0xFFF8FAFC),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                ),
+              // Content Header
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 32, 32, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        localizationService.tr('RECENT SURVEYS'),
-                        style: TextStyle(
+                        localizationService.tr('RECENT SURVEYS').toUpperCase(),
+                        style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8),
-                          letterSpacing: 1.0,
+                          color: const Color(0xFF94A3B8),
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      Text(
-                        localizationService.tr('EFFICIENCY'),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8),
-                          letterSpacing: 1.0,
-                        ),
-                      ),
+                      const Spacer(),
+                      Icon(Icons.sort_rounded, size: 18, color: const Color(0xFF64748B)),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
 
-              // Redesigned 10x Polished Report Cards
+              // Report Cards List
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final report = reports[index];
-                      return AnimatedBuilder(
-                        animation: _animController,
-                        builder: (context, child) {
-                          final delay = index * 0.08;
-                          final animation = CurvedAnimation(
-                            parent: _animController,
-                            curve: Interval(
-                              delay.clamp(0.0, 0.6),
-                              (delay + 0.4).clamp(0.0, 1.0),
-                              curve: Curves.easeOutQuart,
-                            ),
-                          );
-                          return Transform.translate(
-                            offset: Offset(0, 40 * (1 - animation.value)),
-                            child: Opacity(
-                              opacity: animation.value,
-                              child: child,
-                            ),
-                          );
-                        },
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: _animController,
+                          curve: Interval((index / reports.length).clamp(0, 1), 1.0, curve: Curves.easeOut),
+                        ),
                         child: _buildReportCard(report, index),
                       );
                     },
@@ -313,121 +117,99 @@ class _ReportListScreenState extends State<ReportListScreen>
     );
   }
 
-  Widget _buildErrorState(String error) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 140,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      stretch: true,
+      backgroundColor: const Color(0xFF7C3AED), // Violet base
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+        background: Stack(
+          alignment: Alignment.bottomLeft,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 64, color: AppTheme.error),
-            const SizedBox(height: 24),
-            Text(
-              'Database Error',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white70 : AppTheme.textTertiary,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => setState(() {}),
-              child: const Text('RETRY'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+            // Soft Fintech Gradient (Purple to Pink tones)
             Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(isDark ? 0.15 : 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.assessment_rounded,
-                  size: 56,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'No Reports Yet',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
-                letterSpacing: -0.8,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Create your first report to start\ncategorizing and tracking directors',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 48),
-            GestureDetector(
-              onTap: _showCreateReportSheet,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 20),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
-                  borderRadius: BorderRadius.circular(24),
-                  border: isDark ? Border.all(color: const Color(0xFF334155)) : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 25,
-                      offset: const Offset(0, 12),
-                    ),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF7C3AED), // Violet
+                    Color(0xFFC026D3), // Fuschia
+                    Color(0xFFEC4899), // Pink
                   ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+              ),
+            ),
+            
+            // Subtle Decorative Pattern
+            Positioned(
+              right: -30,
+              top: -20,
+              child: Opacity(
+                opacity: 0.12,
+                child: Icon(Icons.auto_graph_rounded, size: 200, color: Colors.white),
+              ),
+            ),
+
+            // Header Content
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.add_rounded, color: Colors.white, size: 24),
-                    SizedBox(width: 12),
-                    Text(
-                      'Create Your First Report',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: 0.2,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              "MANAGEMENT SUITE",
+                              style: GoogleFonts.inter(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            localizationService.tr('reports'),
+                            style: GoogleFonts.poppins(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -1,
+                              height: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _showCreateReportSheet();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                        ),
+                        child: const Icon(Icons.add_rounded, size: 28, color: Colors.white),
                       ),
                     ),
                   ],
@@ -448,224 +230,154 @@ class _ReportListScreenState extends State<ReportListScreen>
     
     final isSingle = report.selectionMode == SelectionMode.single;
     
-    // 10x Polished Theme Palettes
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // 10x Polished Theme Palettes
-    final Color themeColor = isSingle ? const Color(0xFF6366F1) : const Color(0xFFF59E0B);
-    final Color themeLight = isSingle 
-        ? (isDark ? const Color(0xFF6366F1).withOpacity(0.15) : const Color(0xFFEEF2FF))
-        : (isDark ? const Color(0xFFF59E0B).withOpacity(0.15) : const Color(0xFFFFF7ED));
+    // Dynamic Progress Color
+    Color pColor;
+    if (progress == 1.0) pColor = const Color(0xFF10B981); // Green
+    else if (progress > 0.4) pColor = const Color(0xFFF59E0B); // Orange
+    else pColor = const Color(0xFFEF4444); // Red
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: isDark 
-              ? const Color(0xFF334155) 
-              : const Color(0xFF0F172A).withOpacity(0.04), 
-          width: 1.5
-        ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.06),
-            blurRadius: 50,
-            offset: const Offset(0, 20),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: _PremiumScaleEffect(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _openReport(report);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _openReport(report),
-          splashColor: themeColor.withOpacity(0.05),
-          highlightColor: Colors.transparent,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            report.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
-                              letterSpacing: -0.6,
-                              height: 1.1,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Row(
-                            children: [
-                              // Polished Campaign Tag
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: themeLight,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  isSingle ? 'SINGLE' : 'MULTI',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    color: themeColor,
-                                    letterSpacing: 1.8,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              // Active Dot Mesh Indicator
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: themeColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: themeColor.withOpacity(0.4),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  DateFormat('MMM dd, yyyy').format(report.updatedAt),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7C3AED).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 12), // Slightly tighter gap 
-                    PopupMenuButton<String>(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.more_vert_rounded, 
-                        color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1), 
-                        size: 24
-                      ),
-                      onSelected: (value) {
-                        if (value == 'delete') _deleteReport(report);
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.delete_outline_rounded, color: AppTheme.error, size: 20),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'Delete', 
-                                style: TextStyle(
-                                  color: AppTheme.error, 
-                                  fontWeight: FontWeight.w600
-                                )
-                              ),
-                            ],
+                    child: const Icon(Icons.assessment_rounded, color: Color(0xFF7C3AED), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          report.title,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E293B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          "Updated ${DateFormat('MMM dd, yyyy').format(report.updatedAt)}",
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              // High-Gloss Progress Bar
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(100),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildPillBadge(
+                        isSingle ? "Single" : "Multi",
+                        isSingle ? const Color(0xFF6366F1) : const Color(0xFF8B5CF6),
                       ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: progress.clamp(0.02, 1.0),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: isSingle 
-                                          ? [const Color(0xFF6366F1), const Color(0xFF818CF8)]
-                                          : [const Color(0xFF10B981), const Color(0xFF34D399)],
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(100),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (isSingle ? const Color(0xFF6366F1) : const Color(0xFF10B981)).withOpacity(0.3),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Polished Thumb
-                                Positioned(
-                                  right: -4,
-                                  top: -4,
-                                  child: Container(
-                                    width: 16,
-                                    height: 16,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: isSingle ? const Color(0xFF6366F1) : const Color(0xFF10B981),
-                                        width: 3,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.15),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      const SizedBox(height: 2),
+                      SizedBox(
+                        height: 28,
+                        width: 28,
+                        child: PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          iconSize: 18,
+                          icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF94A3B8)),
+                          onSelected: (value) {
+                            if (value == 'delete') _deleteReport(report);
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 16),
+                                  SizedBox(width: 8),
+                                  Text('Delete', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 13)),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Progress Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "$assignedCount of $_totalDirectors Syncing",
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF64748B),
                     ),
-                  ],
+                  ),
+                  Text(
+                    "${(progress * 100).toInt()}%",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: pColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              
+              // More Compact Progress Bar
+              Container(
+                height: 6,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: progress.clamp(0.01, 1.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [pColor, pColor.withOpacity(0.8)],
+                      ),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -675,10 +387,29 @@ class _ReportListScreenState extends State<ReportListScreen>
     );
   }
 
+  Widget _buildPillBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(8), // Modern rounded-rectangle
+        border: Border.all(color: color.withOpacity(0.15)),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.inter(
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          color: color,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
   void _showCreateReportSheet() {
     final titleController = TextEditingController();
     SelectionMode selectedMode = SelectionMode.single;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     showModalBottomSheet(
       context: context,
@@ -687,14 +418,13 @@ class _ReportListScreenState extends State<ReportListScreen>
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           return Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: isDark ? Border(top: BorderSide(color: const Color(0xFF334155))) : null,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
             ),
             padding: EdgeInsets.fromLTRB(
               24, 12, 24,
-              MediaQuery.of(context).viewInsets.bottom + 20,
+              MediaQuery.of(context).viewInsets.bottom + 32,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -703,10 +433,10 @@ class _ReportListScreenState extends State<ReportListScreen>
                 Center(
                   child: Container(
                     width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 20),
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      color: const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(100),
                     ),
                   ),
@@ -714,73 +444,49 @@ class _ReportListScreenState extends State<ReportListScreen>
                 
                 Text(
                   localizationService.tr('create_campaign'),
-                  style: TextStyle(
-                    fontSize: 22,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+                    color: const Color(0xFF1E293B),
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 
                 TextField(
                   controller: titleController,
                   autofocus: true,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600, 
-                    fontSize: 15,
-                    color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
-                  ),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
                   decoration: InputDecoration(
                     labelText: localizationService.tr('campaign_title'),
-                    labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontSize: 13),
-                    hintText: 'e.g. Q1 Annual Audit',
-                    hintStyle: TextStyle(color: const Color(0xFF94A3B8).withOpacity(0.5), fontSize: 14),
-                    prefixIcon: const Icon(Icons.edit_note_rounded, color: Color(0xFF10B981), size: 22),
                     filled: true,
-                    fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    fillColor: const Color(0xFFF8FAFC),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-                    ),
+                    prefixIcon: const Icon(Icons.edit_rounded, color: Color(0xFF7C3AED)),
                   ),
                 ),
-                const SizedBox(height: 20),
-                
-                Text(
-                  localizationService.tr('selection_mode'),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF94A3B8),
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 24),
                 
                 Row(
                   children: [
-                    _buildModeOption(
-                      title: localizationService.tr('single'),
-                      icon: Icons.person_rounded,
+                    _buildModeSelector(
+                      title: "Single Mode",
                       isSelected: selectedMode == SelectionMode.single,
                       onTap: () => setModalState(() => selectedMode = SelectionMode.single),
                     ),
                     const SizedBox(width: 12),
-                    _buildModeOption(
-                      title: localizationService.tr('multi'),
-                      icon: Icons.group_rounded,
+                    _buildModeSelector(
+                      title: "Multi Mode",
                       isSelected: selectedMode == SelectionMode.multi,
                       onTap: () => setModalState(() => selectedMode = SelectionMode.multi),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                
+                const SizedBox(height: 32),
                 
                 SizedBox(
                   width: double.infinity,
@@ -792,21 +498,15 @@ class _ReportListScreenState extends State<ReportListScreen>
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
-                      foregroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
+                      backgroundColor: const Color(0xFF7C3AED),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 8,
+                      shadowColor: const Color(0xFF7C3AED).withOpacity(0.4),
                     ),
                     child: Text(
-                      localizationService.tr('start_campaign'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
-                        fontSize: 13,
-                      ),
+                      "START ANALYSIS",
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 1.2),
                     ),
                   ),
                 ),
@@ -818,117 +518,134 @@ class _ReportListScreenState extends State<ReportListScreen>
     );
   }
 
-  Widget _buildModeOption({
-    required String title,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+  Widget _buildModeSelector({required String title, required bool isSelected, required VoidCallback onTap}) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected 
-                ? const Color(0xFF10B981) 
-                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isSelected 
-                  ? const Color(0xFF10B981) 
-                  : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-              width: 1.5,
-            ),
+            color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isSelected ? const Color(0xFF7C3AED) : Colors.transparent),
           ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                size: 24,
+          child: Center(
+            child: Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
               ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? Colors.white : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _createReport(String title, SelectionMode mode) async {
-    await _repo.create(
-      title: title,
-      selectionMode: mode,
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.report_problem_rounded, size: 80, color: Color(0xFFEF4444)),
+            const SizedBox(height: 24),
+            Text("Something went wrong", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Text(error, textAlign: TextAlign.center, style: GoogleFonts.inter(color: Colors.grey)),
+            const SizedBox(height: 32),
+            ElevatedButton(onPressed: () => setState(() {}), child: const Text("RETRY")),
+          ],
+        ),
+      ),
     );
   }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(color: const Color(0xFF7C3AED).withOpacity(0.05), shape: BoxShape.circle),
+            child: const Icon(Icons.assessment_rounded, size: 100, color: Color(0xFF7C3AED)),
+          ),
+          const SizedBox(height: 32),
+          Text("No Reports Found", style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 12),
+          Text("Let's build your first executive report", style: GoogleFonts.inter(fontSize: 16, color: Colors.grey)),
+          const SizedBox(height: 40),
+          ElevatedButton(
+            onPressed: _showCreateReportSheet,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7C3AED),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text("CREATE NOW", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _createReport(String title, SelectionMode mode) async => await _repo.create(title: title, selectionMode: mode);
 
   void _deleteReport(Report report) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          title: Text(
-            'Delete Campaign', 
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
-            )
-          ),
-          content: Text(
-            'Delete "${report.title}"? This cannot be undone.',
-            style: TextStyle(
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
-            )
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text(
-                'CANCEL', 
-                style: TextStyle(
-                  color: Color(0xFF64748B), 
-                  fontWeight: FontWeight.w800
-                )
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: AppTheme.error),
-              child: const Text('DELETE', style: TextStyle(fontWeight: FontWeight.w900)),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Report?'),
+        content: Text('This will permanently remove "${report.title}".'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('CANCEL')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('DELETE', style: TextStyle(color: Colors.red))),
+        ],
+      ),
     );
-
-    if (confirmed == true) {
-      await _repo.delete(report.id);
-    }
+    if (confirmed == true) await _repo.delete(report.id);
   }
 
-  void _openReport(Report report) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ReportDetailScreen(reportId: report.id),
-      ),
+  void _openReport(Report report) => Navigator.push(context, MaterialPageRoute(builder: (context) => ReportDetailScreen(reportId: report.id)));
+}
+
+class _PremiumScaleEffect extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  const _PremiumScaleEffect({required this.child, required this.onTap});
+
+  @override
+  State<_PremiumScaleEffect> createState() => _PremiumScaleEffectState();
+}
+
+class _PremiumScaleEffectState extends State<_PremiumScaleEffect> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 100));
+    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse().then((_) => widget.onTap()),
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(scale: _scale, child: widget.child),
     );
   }
 }

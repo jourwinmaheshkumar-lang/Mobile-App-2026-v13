@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme.dart';
 import '../../../core/services/localization_service.dart';
 import '../../../core/models/user.dart';
@@ -42,22 +43,30 @@ class _FormListScreenState extends State<FormListScreen> {
         final canManage = currentUser.role == UserRole.admin || currentUser.role == UserRole.officeTeam;
 
         return Scaffold(
-          extendBodyBehindAppBar: true,
+          backgroundColor: AppTheme.background,
           appBar: AppBar(
-            title: Text(localizationService.tr('dynamic_forms')),
-            systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-          ),
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isDark 
-                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                  : [const Color(0xFFF8FAFF), const Color(0xFFF1F5F9)],
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: AppTheme.primaryGradient,
               ),
             ),
-            child: StreamBuilder<List<FormModel>>(
+            title: Text(
+              localizationService.tr('dynamic_forms'),
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+                color: Colors.white,
+              ),
+            ),
+            centerTitle: false,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            systemOverlayStyle: SystemUiOverlayStyle.light,
+          ),
+          body: StreamBuilder<List<FormModel>>(
               stream: _repository.getFormsStream(activeOnly: !canManage),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -88,7 +97,7 @@ class _FormListScreenState extends State<FormListScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 120, 20, 100),
+                  padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
                   itemCount: forms.length,
                   itemBuilder: (context, index) {
                     final form = forms[index];
@@ -97,13 +106,32 @@ class _FormListScreenState extends State<FormListScreen> {
                 );
               },
             ),
-          ),
           floatingActionButton: canManage
-              ? FloatingActionButton.extended(
-                  onPressed: () => _navigateToBuilder(context),
-                  label: Text(localizationService.tr('create_form')),
-                  icon: const Icon(Icons.add),
-                  backgroundColor: AppTheme.primary,
+              ? Container(
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: FloatingActionButton.extended(
+                    onPressed: () => _navigateToBuilder(context),
+                    label: Text(
+                      localizationService.tr('create_form'),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    icon: const Icon(Icons.add_rounded, color: Colors.white),
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                  ),
                 )
               : null,
         );
@@ -294,49 +322,65 @@ class _AdminFormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = const Color(0xFF6366F1);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+        ),
+        boxShadow: isDark ? null : [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: AppTheme.borderLight),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [AppTheme.primary, AppTheme.primary.withOpacity(0.7)]),
-                        borderRadius: BorderRadius.circular(16),
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.assignment_rounded, color: Colors.white, size: 24),
+                      child: Icon(Icons.assignment_rounded, color: primaryColor, size: 22),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             form.title,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: GoogleFonts.poppins(
+                              fontSize: 16, 
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                              letterSpacing: -0.3,
+                            ),
                           ),
                           Text(
-                            'Created ${DateFormat('MMM dd').format(form.createdAt)}',
-                            style: TextStyle(fontSize: 12, color: AppTheme.textTertiary),
+                            'Created ${DateFormat('MMM dd, yyyy').format(form.createdAt)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 10, 
+                              color: AppTheme.textSecondary, 
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -345,19 +389,29 @@ class _AdminFormCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildStatsSection(context),
-                const SizedBox(height: 20),
-                _buildDeadlineInfo(),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.black.withOpacity(0.1) : const Color(0xFFF8FAFF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _buildStatsSection(context),
+                ),
+                if (form.deadline != null) ...[
+                  const SizedBox(height: 12),
+                  _buildDeadlineInfo(isDark),
+                ],
               ],
             ),
           ),
-          _buildBottomAction(context),
+          _buildBottomAction(context, isDark),
         ],
       ),
     );
   }
 
   Widget _buildStatsSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return StreamBuilder<List<FormSubmissionModel>>(
       stream: repository.getSubmissionsStream(form.id),
       builder: (context, snapshot) {
@@ -373,13 +427,13 @@ class _AdminFormCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildStatItem('Approved', approved, Colors.green),
-                _buildStatItem('Pending', pending, Colors.blue),
-                _buildStatItem('Rejected', rejected, Colors.red),
-                _buildStatItem('Total', total, AppTheme.primary),
+                _buildStatItem('Pending', pending, const Color(0xFF6366F1)),
+                _buildStatItem('Rejected', rejected, const Color(0xFFEF4444)),
+                _buildStatItem('Total', total, isDark ? Colors.white70 : const Color(0xFF1E293B)),
               ],
             ),
-            const SizedBox(height: 16),
-            _buildProgressBar(approved, pending, rejected, total),
+            const SizedBox(height: 12),
+            _buildProgressBar(approved, pending, rejected, total, isDark),
           ],
         );
       },
@@ -389,17 +443,20 @@ class _AdminFormCard extends StatelessWidget {
   Widget _buildStatItem(String label, int count, Color color) {
     return Column(
       children: [
-        Text(count.toString(), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(fontSize: 11, color: AppTheme.textTertiary)),
+        Text(count.toString(), style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: color)),
+        Text(label.toUpperCase(), style: GoogleFonts.poppins(fontSize: 8, color: color.withOpacity(0.7), fontWeight: FontWeight.w700, letterSpacing: 0.5)),
       ],
     );
   }
 
-  Widget _buildProgressBar(int approved, int pending, int rejected, int total) {
+  Widget _buildProgressBar(int approved, int pending, int rejected, int total, bool isDark) {
     if (total == 0) {
       return Container(
-        height: 8,
-        decoration: BoxDecoration(color: AppTheme.borderLight, borderRadius: BorderRadius.circular(4)),
+        height: 6,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), 
+          borderRadius: BorderRadius.circular(3),
+        ),
       );
     }
 
@@ -408,19 +465,19 @@ class _AdminFormCard extends StatelessWidget {
     final rejectedWidth = rejected / total;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(3),
       child: Container(
-        height: 8,
+        height: 6,
         width: double.infinity,
-        color: AppTheme.borderLight,
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
         child: Row(
           children: [
             if (approvedWidth > 0)
               Flexible(flex: (approvedWidth * 100).toInt(), child: Container(color: Colors.green)),
             if (pendingWidth > 0)
-              Flexible(flex: (pendingWidth * 100).toInt(), child: Container(color: Colors.blue)),
+              Flexible(flex: (pendingWidth * 100).toInt(), child: Container(color: AppTheme.primary)),
             if (rejectedWidth > 0)
-              Flexible(flex: (rejectedWidth * 100).toInt(), child: Container(color: Colors.red)),
+              Flexible(flex: (rejectedWidth * 100).toInt(), child: Container(color: AppTheme.error)),
             Flexible(flex: ((1 - approvedWidth - pendingWidth - rejectedWidth) * 100).toInt(), child: Container(color: Colors.blue.withOpacity(0.1))),
           ],
         ),
@@ -428,50 +485,56 @@ class _AdminFormCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDeadlineInfo() {
+  Widget _buildDeadlineInfo(bool isDark) {
     if (form.deadline == null) return const SizedBox.shrink();
     
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceVariant.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFF59E0B).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Icon(Icons.timer_outlined, size: 16, color: Colors.orange.shade700),
+          const Icon(Icons.timer_outlined, size: 14, color: Color(0xFFF59E0B)),
           const SizedBox(width: 8),
           Expanded(child: _CountdownTimer(deadline: form.deadline!)),
           Text(
-            'Limit: ${DateFormat('MMM dd, hh:mm a').format(form.deadline!)}',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+            DateFormat('MM/dd HH:mm').format(form.deadline!),
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: isDark ? Colors.white38 : Colors.black38),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomAction(BuildContext context) {
+  Widget _buildBottomAction(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.05),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+        color: const Color(0xFF6366F1).withOpacity(0.03),
+        border: Border(top: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)).top),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => onViewReports(form),
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.analytics_rounded, size: 18, color: AppTheme.primary),
+                const Icon(Icons.analytics_rounded, size: 16, color: AppTheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'VIEW DETAILED REPORTS',
-                  style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  'DETAILED REPORTS',
+                  style: GoogleFonts.poppins(
+                    color: AppTheme.primary, 
+                    fontWeight: FontWeight.w700, 
+                    fontSize: 11, 
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ],
             ),
@@ -509,39 +572,78 @@ class _UserFormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = const Color(0xFF6366F1);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AppTheme.softShadow,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => onNavigate(form),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.description_rounded, color: primaryColor, size: 20),
+                    ),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(form.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          Text(form.description, style: TextStyle(color: AppTheme.textSecondary, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(
+                            form.title, 
+                            style: GoogleFonts.poppins(
+                              fontSize: 15, 
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            form.description, 
+                            style: GoogleFonts.inter(
+                              color: AppTheme.textSecondary, 
+                              fontSize: 11, 
+                              fontWeight: FontWeight.w500,
+                            ), 
+                            maxLines: 1, 
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
                     ),
-                    _buildUserStatus(),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                _buildUserStatus(isDark),
                 if (form.deadline != null) ...[
                   const Divider(),
                   const SizedBox(height: 8),
@@ -565,7 +667,7 @@ class _UserFormCard extends StatelessWidget {
     );
   }
 
-  Widget _buildUserStatus() {
+  Widget _buildUserStatus(bool isDark) {
     return FutureBuilder<AppUser?>(
       future: AuthService().currentAppUser,
       builder: (context, userSnap) {
@@ -575,53 +677,53 @@ class _UserFormCard extends StatelessWidget {
           builder: (context, snap) {
             final sub = snap.data;
             if (sub == null) {
-              return _buildStatusPill(null);
+              return _buildStatusPill(null, isDark);
             }
-            return _buildStatusPill(sub.status);
+            return _buildStatusPill(sub.status, isDark);
           },
         );
       },
     );
   }
 
-  Widget _buildStatusPill(SubmissionStatus? status) {
-    Color color = Colors.grey;
+  Widget _buildStatusPill(SubmissionStatus? status, bool isDark) {
+    Color color = isDark ? Colors.white38 : Colors.black38;
     String text = 'NOT SUBMITTED';
     
-    if (status == null) {
-      color = AppTheme.textTertiary;
-      text = 'NOT SUBMITTED';
-    } else {
+    if (status != null) {
       switch (status) {
-        case SubmissionStatus.draft: 
-          color = Colors.orange; 
-          text = 'DRAFT'; 
-          break;
-        case SubmissionStatus.completed: 
-          color = Colors.blue; 
-          text = 'PENDING FOR APPROVAL'; 
-          break;
-        case SubmissionStatus.approved: 
-          color = Colors.green; 
-          text = 'APPROVED'; 
-          break;
-        case SubmissionStatus.rejected: 
-          color = Colors.red; 
-          text = 'REJECTED'; 
-          break;
+        case SubmissionStatus.draft: color = const Color(0xFFF59E0B); text = 'DRAFT'; break;
+        case SubmissionStatus.completed: color = const Color(0xFF6366F1); text = 'PENDING'; break;
+        case SubmissionStatus.approved: color = const Color(0xFF10B981); text = 'APPROVED'; break;
+        case SubmissionStatus.rejected: color = const Color(0xFFEF4444); text = 'REJECTED'; break;
       }
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1), 
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withOpacity(0.08), 
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(
-        text, 
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text, 
+            style: GoogleFonts.poppins(
+              color: color, 
+              fontSize: 9, 
+              fontWeight: FontWeight.w700, 
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }

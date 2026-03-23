@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../core/services/theme_service.dart';
 import '../../core/services/localization_service.dart';
@@ -119,25 +120,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
             slivers: [
               // App Bar
               SliverAppBar(
-                expandedHeight: 120,
+                expandedHeight: 140,
                 floating: true,
                 pinned: true,
-                stretch: true,
-                backgroundColor: bgColor,
-                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                backgroundColor: AppTheme.primary,
                 flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                  title: Text(
-                    localizationService.tr('settings'),
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
                   background: Container(
-                    color: bgColor,
+                    decoration: const BoxDecoration(
+                      gradient: AppTheme.premiumGradient,
+                    ),
+                    child: SafeArea(
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            right: -20,
+                            top: 20,
+                            child: Opacity(
+                              opacity: 0.1,
+                              child: Icon(Icons.settings_suggest_rounded, size: 100, color: Colors.white),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20),
+                                Text(
+                                  localizationService.tr('settings'),
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 28,
+                                    color: Colors.white,
+                                    letterSpacing: -1.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -155,56 +180,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // Security Section
                     _buildSectionHeader(localizationService.tr('security')),
                     const SizedBox(height: 12),
-                    _buildToggleTile(
-                      icon: Icons.fingerprint_rounded,
-                      title: localizationService.tr('biometric_login'),
-                      subtitle: localizationService.tr('use_face_fingerprint'),
-                      value: _biometric,
-                      onChanged: (v) => setState(() => _biometric = v),
-                      color: AppTheme.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildActionTile(
-                      icon: Icons.lock_outline_rounded,
-                      title: 'Change Password',
-                      subtitle: 'Update your login password',
-                      onTap: () => _showChangePasswordDialog(context),
-                      color: AppTheme.warning,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildToggleTile(
-                      icon: Icons.notifications_active_rounded,
-                      title: localizationService.tr('push_notifications'),
-                      subtitle: localizationService.tr('receive_alerts'),
-                      value: _notifications,
-                      onChanged: (v) => setState(() => _notifications = v),
-                      color: AppTheme.warning,
-                    ),
+                    _buildSettingsGroup([
+                      _buildToggleTile(
+                        icon: Icons.fingerprint_rounded,
+                        title: localizationService.tr('biometric_login'),
+                        subtitle: localizationService.tr('use_face_fingerprint'),
+                        value: _biometric,
+                        onChanged: (v) => setState(() => _biometric = v),
+                        color: AppTheme.primary,
+                      ),
+                      _buildActionTile(
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Change Password',
+                        subtitle: 'Update your login password',
+                        onTap: () => _showChangePasswordDialog(context),
+                        color: AppTheme.warning,
+                      ),
+                      _buildToggleTile(
+                        icon: Icons.notifications_active_rounded,
+                        title: localizationService.tr('push_notifications'),
+                        subtitle: localizationService.tr('receive_alerts'),
+                        value: _notifications,
+                        onChanged: (v) => setState(() => _notifications = v),
+                        color: AppTheme.warning,
+                      ),
+                    ]),
                     
                     const SizedBox(height: 28),
                     
                     // Preferences Section
                     _buildSectionHeader(localizationService.tr('preferences')),
                     const SizedBox(height: 12),
-                    _buildToggleTile(
-                      icon: Icons.dark_mode_rounded,
-                      title: localizationService.tr('dark_mode'),
-                      subtitle: localizationService.tr('switch_dark_theme'),
-                      value: themeService.isDarkMode,
-                      onChanged: (v) async {
-                        await themeService.setDarkMode(v);
-                        setState(() {});
-                        HapticFeedback.mediumImpact();
-                      },
-                      color: AppTheme.textSecondary,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildActionTile(
-                      icon: Icons.language_rounded,
-                      title: localizationService.tr('language'),
-                      subtitle: localizationService.currentLanguageName,
-                      onTap: () => _showLanguageSheet(context),
-                    ),
+                    _buildSettingsGroup([
+                      _buildToggleTile(
+                        icon: Icons.dark_mode_rounded,
+                        title: localizationService.tr('dark_mode'),
+                        subtitle: localizationService.tr('switch_dark_theme'),
+                        value: themeService.isDarkMode,
+                        onChanged: (v) async {
+                          await themeService.setDarkMode(v);
+                          setState(() {});
+                          HapticFeedback.mediumImpact();
+                        },
+                        color: AppTheme.textSecondary,
+                      ),
+                      _buildActionTile(
+                        icon: Icons.language_rounded,
+                        title: localizationService.tr('language'),
+                        subtitle: localizationService.currentLanguageName,
+                        onTap: () => _showLanguageSheet(context),
+                      ),
+                    ]),
+
                     const SizedBox(height: 28),
                     
                     // Text Display Section
@@ -217,45 +244,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // Data Section
                     _buildSectionHeader(localizationService.tr('data_sync')),
                     const SizedBox(height: 12),
-                    _buildActionTile(
-                      icon: Icons.cloud_sync_rounded,
-                      title: localizationService.tr('sync_data'),
-                      subtitle: localizationService.tr('last_synced'),
-                      onTap: () => _showSnackBar(context, localizationService.tr('syncing_data')),
-                      color: AppTheme.info,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildActionTile(
-                      icon: Icons.backup_rounded,
-                      title: localizationService.tr('backup'),
-                      subtitle: localizationService.tr('create_backup'),
-                      onTap: () => _showSnackBar(context, localizationService.tr('creating_backup')),
-                      color: AppTheme.success,
-                    ),
+                    _buildSettingsGroup([
+                      _buildActionTile(
+                        icon: Icons.cloud_sync_rounded,
+                        title: localizationService.tr('sync_data'),
+                        subtitle: localizationService.tr('last_synced'),
+                        onTap: () => _showSnackBar(context, localizationService.tr('syncing_data')),
+                        color: AppTheme.info,
+                      ),
+                      _buildActionTile(
+                        icon: Icons.backup_rounded,
+                        title: localizationService.tr('backup'),
+                        subtitle: localizationService.tr('create_backup'),
+                        onTap: () => _showSnackBar(context, localizationService.tr('creating_backup')),
+                        color: AppTheme.success,
+                      ),
+                      _buildActionTile(
+                        icon: Icons.system_update_rounded,
+                        title: 'Check for Updates',
+                        subtitle: _isCheckingUpdate ? 'Checking...' : 'Check if a newer version is available',
+                        onTap: () => _checkForUpdates(silent: false),
+                        color: AppTheme.primary,
+                      ),
+                      if (role == UserRole.admin) 
+                        _buildActionTile(
+                          icon: Icons.history_rounded,
+                          title: localizationService.tr('activity_log'),
+                          subtitle: localizationService.tr('view_activity'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
+                          ),
+                        ),
+                    ]),
                     
                     const SizedBox(height: 12),
                     if (_serverVersion != null) ...[
                       _buildUpdateBanner(),
                       const SizedBox(height: 12),
-                    ],
-                    _buildActionTile(
-                      icon: Icons.system_update_rounded,
-                      title: 'Check for Updates',
-                      subtitle: _isCheckingUpdate ? 'Checking...' : 'Check if a newer version is available',
-                      onTap: () => _checkForUpdates(silent: false),
-                      color: AppTheme.primary,
-                    ),
-                    if (role == UserRole.admin) ...[
-                      const SizedBox(height: 12),
-                      _buildActionTile(
-                        icon: Icons.history_rounded,
-                        title: localizationService.tr('activity_log'),
-                        subtitle: localizationService.tr('view_activity'),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
-                        ),
-                      ),
                     ],
                     
                     const SizedBox(height: 28),
@@ -263,19 +289,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // About Section
                     _buildSectionHeader(localizationService.tr('about')),
                     const SizedBox(height: 12),
-                    _buildActionTile(
-                      icon: Icons.info_outline_rounded,
-                      title: localizationService.tr('about_app'),
-                      subtitle: localizationService.tr('version'),
-                      onTap: () => _showAboutDialog(context),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildActionTile(
-                      icon: Icons.help_outline_rounded,
-                      title: localizationService.tr('help_support'),
-                      subtitle: localizationService.tr('get_help'),
-                      onTap: () => _showSnackBar(context, localizationService.tr('opening_help')),
-                    ),
+                    _buildSettingsGroup([
+                      _buildActionTile(
+                        icon: Icons.info_outline_rounded,
+                        title: localizationService.tr('about_app'),
+                        subtitle: localizationService.tr('version'),
+                        onTap: () => _showAboutDialog(context),
+                      ),
+                      _buildActionTile(
+                        icon: Icons.help_outline_rounded,
+                        title: localizationService.tr('help_support'),
+                        subtitle: localizationService.tr('get_help'),
+                        onTap: () => _showSnackBar(context, localizationService.tr('opening_help')),
+                      ),
+                    ]),
                     
                     const SizedBox(height: 40),
                     
@@ -326,14 +353,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final roleName = role.name.toUpperCase();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppTheme.darkGradient,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        gradient: AppTheme.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.textPrimary.withOpacity(0.15),
-            blurRadius: 24,
+            color: AppTheme.primary.withOpacity(0.3),
+            blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
@@ -342,85 +369,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // Avatar
           Container(
-            width: 64,
-            height: 64,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 2,
+                color: Colors.white.withOpacity(0.3),
+                width: 3,
               ),
             ),
             child: Center(
               child: Text(
                 name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           
           // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        textUtils.format(name),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    if (role == UserRole.admin)
-                      IconButton(
-                        icon: const Icon(Icons.edit_rounded, color: Colors.white70, size: 18),
-                        onPressed: () => _showEditProfileSheet(context, user!),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                  ],
+                Text(
+                  textUtils.format(name),
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 if (username.isNotEmpty && role != UserRole.admin)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
                       'DIN: $username',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.success.withOpacity(0.3),
+                    color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
-                        Icons.verified_rounded,
-                        color: AppTheme.success,
-                        size: 12,
+                        Icons.verified_user_rounded,
+                        color: Colors.white,
+                        size: 14,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
                         roleName,
-                        style: const TextStyle(
+                        style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
@@ -435,13 +454,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        color: AppTheme.textTertiary,
-        letterSpacing: 1.2,
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title.toUpperCase(),
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.primary,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsGroup(List<Widget> children) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final dividerColor = isDark ? const Color(0xFF334155).withOpacity(0.5) : const Color(0xFFF1F5F9);
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1),
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: children.asMap().entries.map((entry) {
+          final index = entry.key;
+          final widget = entry.value;
+          return Column(
+            children: [
+              widget,
+              if (index < children.length - 1)
+                Padding(
+                  padding: const EdgeInsets.only(left: 64),
+                  child: Divider(height: 1, thickness: 1, color: dividerColor),
+                ),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
@@ -457,100 +519,95 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final tileColor = color ?? AppTheme.primary;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorderLight : AppTheme.borderLight;
     final textPrimary = isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary;
     final textTertiary = isDark ? AppTheme.darkTextTertiary : AppTheme.textTertiary;
     
-    return Container(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-        boxShadow: isDark ? null : AppTheme.softShadow,
-        border: Border.all(color: borderColor),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onChanged(!value);
-          },
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: tileColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: tileColor, size: 22),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onChanged(!value);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: tileColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: textPrimary,
-                        ),
+                child: Icon(icon, color: tileColor, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: textPrimary,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: textTertiary,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: textTertiary,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 52,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: value ? AppTheme.success : (isDark ? AppTheme.darkBorder : AppTheme.border),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Stack(
-                    children: [
-                      AnimatedPositioned(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOutCubic,
-                        left: value ? 24 : 2,
-                        top: 2,
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkTextPrimary : Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x1A000000),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+              _buildModernSwitch(value),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildModernSwitch(bool value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 48,
+      height: 28,
+      decoration: BoxDecoration(
+        color: value ? AppTheme.success : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Stack(
+        children: [
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            left: value ? 22 : 2,
+            top: 3,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -565,77 +622,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final tileColor = color ?? AppTheme.textSecondary;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorderLight : AppTheme.borderLight;
     final textPrimary = isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary;
     final textTertiary = isDark ? AppTheme.darkTextTertiary : AppTheme.textTertiary;
-    final surfaceVariant = isDark ? AppTheme.darkSurfaceVariant : AppTheme.surfaceVariant;
     
-    return Container(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-        boxShadow: isDark ? null : AppTheme.softShadow,
-        border: Border.all(color: borderColor),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onTap();
-          },
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: tileColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: tileColor, size: 22),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: tileColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: textPrimary,
-                        ),
+                child: Icon(icon, color: tileColor, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: textPrimary,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: textTertiary,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: textTertiary,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: surfaceVariant,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    color: textTertiary,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: textTertiary.withOpacity(0.5),
+                size: 20,
+              ),
+            ],
           ),
         ),
       ),
@@ -764,15 +803,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLogoutButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.error.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        color: AppTheme.error.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.error.withOpacity(0.2)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _confirmLogout(context),
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18),
             child: Row(
@@ -781,14 +820,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Icon(
                   Icons.logout_rounded,
                   color: AppTheme.error,
-                  size: 22,
+                  size: 24,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Text(
                   localizationService.tr('logout'),
-                  style: const TextStyle(
+                  style: GoogleFonts.poppins(
                     color: AppTheme.error,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

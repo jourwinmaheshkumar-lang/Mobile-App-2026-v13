@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../core/services/localization_service.dart';
 import '../main_container.dart';
@@ -119,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -128,12 +130,10 @@ class _LoginScreenState extends State<LoginScreen>
               ? [
                   const Color(0xFF0F172A),
                   const Color(0xFF1E293B),
-                  const Color(0xFF0F172A),
                 ]
               : [
-                  const Color(0xFFF8FAFF),
-                  const Color(0xFFF1F5F9),
-                  const Color(0xFFEEF2FF),
+                  const Color(0xFFFFFFFF),
+                  const Color(0xFFF8FAFC),
                 ],
           ),
         ),
@@ -155,8 +155,8 @@ class _LoginScreenState extends State<LoginScreen>
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFF6366F1).withOpacity(0.15),
-                            const Color(0xFF6366F1).withOpacity(0.05),
+                            AppTheme.primary.withOpacity(0.12),
+                            AppTheme.primary.withOpacity(0.04),
                             Colors.transparent,
                           ],
                         ),
@@ -297,10 +297,10 @@ class _LoginScreenState extends State<LoginScreen>
         // Title
         Text(
           localizationService.tr('login_title'),
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: isDark ? Colors.white : const Color(0xFF1E293B),
+          style: GoogleFonts.poppins(
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : AppTheme.textPrimary,
             letterSpacing: -0.5,
           ),
         ),
@@ -348,10 +348,10 @@ class _LoginScreenState extends State<LoginScreen>
         // Subtitle
         Text(
           localizationService.tr('secure_access_msg'),
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            color: AppTheme.textSecondary,
             letterSpacing: 0.2,
           ),
         ),
@@ -368,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen>
         return Transform.scale(
           scale: value,
           child: Opacity(
-            opacity: value,
+            opacity: value.clamp(0.0, 1.0),
             child: child,
           ),
         );
@@ -466,18 +466,17 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildInputLabel(String label, IconData icon) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
-        Icon(icon, size: 14, color: const Color(0xFF6366F1).withOpacity(0.8)),
+        Icon(icon, size: 14, color: AppTheme.primary.withOpacity(0.7)),
         const SizedBox(width: 8),
         Text(
           label.toUpperCase(),
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 11,
-            fontWeight: FontWeight.w800,
-            color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            letterSpacing: 1.2,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textSecondary,
+            letterSpacing: 1.1,
           ),
         ),
       ],
@@ -496,20 +495,12 @@ class _LoginScreenState extends State<LoginScreen>
     
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(18),
+        color: AppTheme.cardSurface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: AppTheme.borderLight,
           width: 1,
         ),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-        ],
       ),
       child: TextFormField(
         controller: controller,
@@ -522,31 +513,31 @@ class _LoginScreenState extends State<LoginScreen>
           }
           return null;
         },
-        style: TextStyle(
+        style: GoogleFonts.inter(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF1E293B),
+          color: AppTheme.textPrimary,
           letterSpacing: isPassword && _obscure ? 2.0 : 0.5,
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(
-            color: const Color(0xFF94A3B8),
+          hintStyle: GoogleFonts.inter(
+            color: AppTheme.hintText,
             fontWeight: FontWeight.w400,
             letterSpacing: 0,
           ),
           prefixIcon: Container(
             margin: const EdgeInsets.only(left: 4),
             padding: const EdgeInsets.all(12),
-            child: Icon(icon, size: 20, color: const Color(0xFF6366F1).withOpacity(0.6)),
+            child: Icon(icon, size: 20, color: AppTheme.primary.withOpacity(0.6)),
           ),
           suffixIcon: isPassword
               ? Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: IconButton(
                     icon: Icon(
-                      _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: const Color(0xFF94A3B8),
+                      _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                      color: AppTheme.hintText,
                       size: 20,
                     ),
                     onPressed: () => setState(() => _obscure = !_obscure),
@@ -566,15 +557,11 @@ class _LoginScreenState extends State<LoginScreen>
       child: Container(
         height: 62,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-          ),
-          borderRadius: BorderRadius.circular(22),
+          gradient: AppTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.35),
+              color: AppTheme.primary.withOpacity(0.35),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -597,10 +584,10 @@ class _LoginScreenState extends State<LoginScreen>
                     const SizedBox(width: 12),
                     Text(
                       localizationService.tr('sign_in'),
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -620,12 +607,12 @@ class _LoginScreenState extends State<LoginScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.fingerprint_rounded, color: Color(0xFF6366F1), size: 22),
+            const Icon(Icons.fingerprint_rounded, color: AppTheme.primary, size: 22),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'Login with Biometrics',
-              style: TextStyle(
-                color: Color(0xFF6366F1),
+              style: GoogleFonts.inter(
+                color: AppTheme.primary,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -643,8 +630,8 @@ class _LoginScreenState extends State<LoginScreen>
       children: [
         Text(
           'No account?',
-          style: TextStyle(
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          style: GoogleFonts.inter(
+            color: AppTheme.textSecondary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -652,11 +639,11 @@ class _LoginScreenState extends State<LoginScreen>
         const SizedBox(width: 6),
         GestureDetector(
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegistrationScreen())),
-          child: const Text(
+          child: Text(
             'Register Now',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF6366F1),
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primary,
               fontSize: 14,
             ),
           ),

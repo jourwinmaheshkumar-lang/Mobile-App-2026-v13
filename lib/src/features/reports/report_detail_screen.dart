@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../core/models/report.dart';
 import '../../core/models/director.dart';
@@ -49,11 +50,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       
       if (mounted) {
         setState(() {
-          _allDirectors = directors;
+          _allDirectors = directors.where((d) => d.status == 'Active').toList();
           _report = report;
           _isLoading = false;
         });
-        debugPrint('State updated: ${_allDirectors.length} directors ready');
+        debugPrint('State updated: ${_allDirectors.length} active directors ready');
       }
     } catch (e) {
       debugPrint('Error in _loadData: $e');
@@ -84,10 +85,10 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0F4FF),
+        backgroundColor: AppTheme.background,
         appBar: AppBar(
-          backgroundColor: isDark ? const Color(0xFF1E293B) : AppTheme.primary,
-          title: Text(localizationService.tr('loading'), style: const TextStyle(color: Colors.white)),
+          flexibleSpace: Container(decoration: const BoxDecoration(gradient: AppTheme.primaryGradient)),
+          title: Text(localizationService.tr('loading'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
             onPressed: () => Navigator.pop(context),
@@ -128,154 +129,56 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         : [const Color(0xFF11998E), const Color(0xFF38EF7D)];
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0F4FF),
+      backgroundColor: AppTheme.background,
       body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // Premium App Bar
           SliverAppBar(
-            expandedHeight: 180,
-            floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: primaryGradient[0],
-            centerTitle: false,
-            title: Text(
-              report.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                color: Colors.white,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            backgroundColor: AppTheme.primary,
             leading: IconButton(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: primaryGradient,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Selection mode badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                report.selectionMode == SelectionMode.single
-                                    ? Icons.radio_button_checked_rounded
-                                    : Icons.check_box_rounded,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                report.selectionMode == SelectionMode.single
-                                    ? localizationService.tr('single_selection')
-                                    : localizationService.tr('multi_selection'),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withOpacity(0.95),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // Title
-                        Text(
-                          report.title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 28,
-                            letterSpacing: 0.3,
-                            color: Colors.white,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            titleSpacing: 0,
+            centerTitle: false,
+            title: Text(
+              report.title,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: AppTheme.primaryGradient,
               ),
             ),
             actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 12),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _showExportOptions,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.ios_share_rounded, size: 18, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text(
-                            localizationService.tr('export'),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              IconButton(
+                onPressed: _showExportOptions,
+                icon: const Icon(Icons.ios_share_rounded, color: Colors.white),
               ),
             ],
           ),
 
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-              padding: const EdgeInsets.all(24),
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                color: AppTheme.cardSurface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE8ECF0), 
-                  width: 1
-                ),
-                boxShadow: isDark ? null : [
+                boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -287,56 +190,26 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       localizationService.tr('categories'),
                       '${report.categories.length}',
                       Icons.grid_view_rounded,
-                      const Color(0xFF6366F1),
-                      isDark ? const Color(0xFF6366F1).withOpacity(0.15) : const Color(0xFFEEF2FF),
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
+                      AppTheme.primary,
+                      AppTheme.primary.withOpacity(0.12),
                     ),
                   ),
                   Expanded(
                     child: _buildPremiumStatItem(
                       localizationService.tr('assigned'),
                       '${_allDirectors.length - unassigned.length}',
-                      Icons.check_circle_outline_rounded,
-                      const Color(0xFF10B981),
-                      isDark ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFFECFDF5),
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
+                      Icons.check_circle_rounded,
+                      AppTheme.success,
+                      AppTheme.success.withOpacity(0.12),
                     ),
                   ),
                   Expanded(
                     child: _buildPremiumStatItem(
                       localizationService.tr('pending'),
                       '${unassigned.length}',
-                      Icons.warning_rounded,
-                      const Color(0xFFEF4444),
-                      isDark ? const Color(0xFFEF4444).withOpacity(0.15) : const Color(0xFFFEF2F2),
+                      Icons.pending_actions_rounded,
+                      AppTheme.error,
+                      AppTheme.error.withOpacity(0.12),
                     ),
                   ),
                 ],
@@ -510,6 +383,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final assigned = _allDirectors.length - unassigned.length;
     final total = _allDirectors.length;
     final completionPercentage = total > 0 ? (assigned / total) : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Premium Status Colors
     final completionColor = completionPercentage < 0.3 
@@ -519,87 +393,69 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             : const Color(0xFF10B981);
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF1E293B),
-            const Color(0xFF0F172A).withOpacity(0.95),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(28),
+        color: AppTheme.cardSurface,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.5),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.03),
-            blurRadius: 1,
-            spreadRadius: 1,
-            offset: const Offset(0, 1),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
+        border: Border.all(color: AppTheme.primary.withOpacity(0.03)),
       ),
       child: Column(
         children: [
           // Header with Glass Accent
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.white.withOpacity(0.15), Colors.white.withOpacity(0.05)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    color: AppTheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.analytics_rounded, color: AppTheme.primary, size: 16),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 const Expanded(
                   child: Text(
                     'Insights Dashboard',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.8,
+                      color: AppTheme.primary,
+                      letterSpacing: 0.5,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: AppTheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.05)),
                   ),
                   child: Text(
                     '$total TOTAL',
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 1.0),
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: 0.5),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           // Premium Credit-Style Gauge Row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Center(
               child: SizedBox(
-                height: 160,
-                width: 260,
+                height: 130,
+                width: 220,
                 child: Stack(
                   children: [
                     // Segmented Gauge Base
@@ -610,7 +466,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     ),
                     // Central Readout (Re-engineered for Zero Overlap)
                     Positioned(
-                      bottom: 15, // Anchored for breathing room
+                      bottom: 12, // Anchored for breathing room
                       left: 0,
                       right: 0,
                       child: Column(
@@ -619,26 +475,26 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                           Text(
                             '$assigned OF $total DIRECTORS',
                             style: TextStyle(
-                              fontSize: 9,
+                              fontSize: 8,
                               fontWeight: FontWeight.w900,
                               color: Colors.white.withOpacity(0.3),
-                              letterSpacing: 1.5,
+                              letterSpacing: 1.2,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
                             '${(completionPercentage * 100).toStringAsFixed(0)}%',
-                            style: const TextStyle(
-                              fontSize: 42,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                            style: GoogleFonts.poppins(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.primary,
                               letterSpacing: -1.0,
                               height: 1.0,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.04),
                               borderRadius: BorderRadius.circular(20),
@@ -646,10 +502,10 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                             child: Text(
                               'Quality Status: ${completionPercentage < 0.3 ? "POOR" : completionPercentage < 0.7 ? "AVERAGE" : "EXCELLENT"}',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w900,
                                 color: completionColor.withOpacity(0.9),
-                                letterSpacing: 0.8,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ),
@@ -662,20 +518,21 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             ),
           ),
           // Sub-footer for Gauge Info (arranged better)
+          const SizedBox(height: 4),
           Center(
             child: Text(
               'Last Updated: ${DateFormat('dd MMM yyyy').format(report.updatedAt)}',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 9,
-                color: Colors.white.withOpacity(0.35),
+                color: AppTheme.textTertiary,
                 letterSpacing: 0.5,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           // Category Breakdown & Horizontal Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
                 // Segmented Scale Footers
@@ -692,10 +549,10 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 // The Segmented Scale Bar with Current Level Indicator
                 SizedBox(
-                  height: 12,
+                  height: 10,
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -752,13 +609,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 // Premium Interactive Pills
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.only(bottom: 20),
                   child: Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
+                    spacing: 8,
+                    runSpacing: 8,
                     alignment: WrapAlignment.center,
                     children: [
                       ...report.categories.asMap().entries.map((entry) {
@@ -779,42 +636,47 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                         final color = colorPalette[index % colorPalette.length];
                         
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                           decoration: BoxDecoration(
                             color: color.withOpacity(0.06),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: color.withOpacity(0.15)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 7,
-                                height: 7,
+                                width: 6,
+                                height: 6,
                                 decoration: BoxDecoration(
                                   color: color,
                                   shape: BoxShape.circle,
                                   boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 4)],
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
                                   category.name,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.2),
+                                  style: TextStyle(
+                                    fontSize: 9, 
+                                    fontWeight: FontWeight.w700, 
+                                    color: isDark ? Colors.white.withOpacity(0.9) : AppTheme.textPrimary, 
+                                    letterSpacing: 0.2
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
                                   color: color.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Text(
                                   '${directors.length}/${_allDirectors.length}',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.2),
+                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.2),
                                 ),
                               ),
                             ],
@@ -823,36 +685,44 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       }),
                       if (unassigned.isNotEmpty)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF43F5E).withOpacity(0.06),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: const Color(0xFFF43F5E).withOpacity(0.15)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 7,
-                                height: 7,
+                                width: 6,
+                                height: 6,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF43F5E),
                                   shape: BoxShape.circle,
                                   boxShadow: [BoxShadow(color: const Color(0xFFF43F5E).withOpacity(0.3), blurRadius: 4)],
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              const Text('Pending', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.2)),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Pending', 
+                                style: TextStyle(
+                                  fontSize: 9, 
+                                  fontWeight: FontWeight.w700, 
+                                  color: isDark ? Colors.white.withOpacity(0.9) : AppTheme.textPrimary, 
+                                  letterSpacing: 0.2
+                                )
+                              ),
+                              const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF43F5E).withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Text(
                                   '${unassigned.length}/${_allDirectors.length}',
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFF43F5E), letterSpacing: -0.2),
+                                  style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFF43F5E), letterSpacing: -0.2),
                                 ),
                               ),
                             ],
@@ -932,43 +802,34 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   Widget _buildPremiumStatItem(String label, String value, IconData icon, Color color, Color bgColor) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: isDark ? null : [
-              BoxShadow(
-                color: color.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: Icon(icon, color: color, size: 18),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: color,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
             height: 1,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,
-            letterSpacing: 0.3,
+          style: GoogleFonts.inter(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textSecondary,
+            letterSpacing: 0.2,
           ),
         ),
       ],
@@ -999,20 +860,15 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       key: ValueKey(category.id),
       index: index,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: isDark ? null : [
             BoxShadow(
-              color: color.withOpacity(0.12),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: color.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -1020,7 +876,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           children: [
             // Header with refined gradient
             Container(
-              padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [color, color.withOpacity(0.85)],
@@ -1028,8 +884,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.vertical(
-                  top: const Radius.circular(20),
-                  bottom: isExpanded ? Radius.zero : const Radius.circular(20),
+                  top: const Radius.circular(16),
+                  bottom: isExpanded ? Radius.zero : const Radius.circular(16),
                 ),
               ),
               child: Column(
@@ -1040,7 +896,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       Icon(
                         Icons.reorder_rounded,
                         color: Colors.white.withOpacity(0.6),
-                        size: 20,
+                        size: 18,
                       ),
                       const SizedBox(width: 4),
                       // Tappable area for expand/collapse
@@ -1059,7 +915,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                               Text(
                                 category.name,
                                 style: const TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
                                   letterSpacing: 0.1,
@@ -1075,21 +931,21 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           onTap: () {
                             HapticFeedback.mediumImpact();
                             _showAddDirectorSheet(category);
                           },
                           child: Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
                               Icons.add_circle_outline_rounded,
                               color: Colors.white,
-                              size: 24,
+                              size: 20,
                             ),
                           ),
                         ),
@@ -1100,7 +956,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                         icon: Icon(
                           Icons.more_vert_rounded,
                           color: Colors.white.withOpacity(0.9),
-                          size: 22,
+                          size: 20,
                         ),
                         onSelected: (value) {
                           if (value == 'add') {
@@ -1187,6 +1043,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       )
                     : ListView.builder(
                         shrinkWrap: true,
+                        padding: EdgeInsets.zero,
                         physics: const BouncingScrollPhysics(),
                         itemCount: directors.length,
                         itemBuilder: (context, index) {
@@ -1234,18 +1091,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               children: [
                 Text(
                   textUtils.format(director.name),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: isDark ? const Color(0xFFF8FAFC) : AppTheme.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 if (director.din.isNotEmpty)
                   Text(
                     'DIN: ${director.din}',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? const Color(0xFF94A3B8) : AppTheme.textTertiary,
+                      color: AppTheme.textSecondary,
                     ),
                   ),
               ],
@@ -1269,43 +1126,36 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF7F1D1D).withOpacity(0.1) : const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? const Color(0xFF991B1B).withOpacity(0.3) : const Color(0xFFFECACA)
         ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFF87171), Color(0xFFEF4444)],
               ),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(11)),
             ),
             child: Column(
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.warning_rounded, color: Colors.white, size: 22),
-                    const SizedBox(width: 10),
+                    const Icon(Icons.warning_rounded, color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Not Answered (${unassigned.length})',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -1313,7 +1163,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 // Progress Bar
                 Builder(
                   builder: (context) {
@@ -1323,20 +1173,20 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       children: [
                         Expanded(
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(3),
                             child: LinearProgressIndicator(
                               value: percentage,
                               backgroundColor: Colors.white.withOpacity(0.3),
                               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                              minHeight: 6,
+                              minHeight: 4,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Text(
                           '${(percentage * 100).toStringAsFixed(1)}%',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.w600,
                             color: Colors.white.withOpacity(0.9),
                           ),
@@ -1350,12 +1200,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           ListView.builder(
             shrinkWrap: true,
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: unassigned.length,
             itemBuilder: (context, index) {
               final director = unassigned[index];
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: EdgeInsets.fromLTRB(16, index == 0 ? 6 : 10, 16, 10),
                 decoration: BoxDecoration(
                   border: index < unassigned.length - 1
                       ? const Border(bottom: BorderSide(color: Color(0xFFFECACA)))
@@ -1520,11 +1371,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       return;
     }
     
-    // Use cached directors from repository as fallback
+    // Use filtered directors from repository as fallback
     List<Director> directorsToUse = _allDirectors;
     if (directorsToUse.isEmpty) {
-      directorsToUse = _directorRepo.all;
-      debugPrint('Using cached directors from repo: ${directorsToUse.length}');
+      directorsToUse = _directorRepo.all.where((d) => d.status == 'Active').toList();
+      debugPrint('Using filtered directors from repo: ${directorsToUse.length}');
     }
     
     if (directorsToUse.isEmpty) {
@@ -2349,17 +2200,17 @@ class _PieChartPainter extends CustomPainter {
       // Arc Shadow/Glow
       final shadowPaint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 14
+        ..strokeWidth = 10
         ..strokeCap = StrokeCap.round
         ..color = colors[0].withOpacity(0.25)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
       
       canvas.drawArc(rect, startAngle + 0.04, sweepAngle - 0.08, false, shadowPaint);
 
       // Main Arc with Multi-stop Gradient
       final paint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 12
+        ..strokeWidth = 8
         ..strokeCap = StrokeCap.round
         ..shader = LinearGradient(
           colors: [colors[0], colors[1]],
@@ -2378,16 +2229,16 @@ class _PieChartPainter extends CustomPainter {
       
       final shadowPaint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 14
+        ..strokeWidth = 10
         ..strokeCap = StrokeCap.round
         ..color = const Color(0xFFF43F5E).withOpacity(0.25)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
       canvas.drawArc(rect, startAngle + 0.04, sweepAngle - 0.08, false, shadowPaint);
 
       final paint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 12
+        ..strokeWidth = 8
         ..strokeCap = StrokeCap.round
         ..shader = const LinearGradient(
           colors: [Color(0xFFF43F5E), Color(0xFFBE123C)],
@@ -2445,8 +2296,8 @@ class _SegmentedBarGlowPainter extends CustomPainter {
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(currentX + 4, 0, width - 8, 12),
-          const Radius.circular(8),
+          Rect.fromLTWH(currentX + 4, 0, width - 8, 8),
+          const Radius.circular(6),
         ),
         paint,
       );
@@ -2465,8 +2316,8 @@ class _SegmentedBarGlowPainter extends CustomPainter {
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(currentX + 4, 0, width - 8, 12),
-          const Radius.circular(8),
+          Rect.fromLTWH(currentX + 4, 0, width - 8, 8),
+          const Radius.circular(6),
         ),
         paint,
       );
@@ -2492,7 +2343,7 @@ class _GaugeChartPainter extends CustomPainter {
     // Segment Configuration
     const segments = 4;
     const totalAngle = 3.14159; // 180 degrees
-    const gap = 0.15; // Balanced gap for perfect separation without being too much
+    const gap = 0.14; // Compensates for rounded caps to show separation
     const segmentAngle = (totalAngle - (gap * (segments - 1))) / segments;
 
     final colors = [
@@ -2504,10 +2355,10 @@ class _GaugeChartPainter extends CustomPainter {
 
     // Background Shadow Track
     final trackPaint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = const Color(0xFFE2E8F0).withOpacity(0.5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round; // Restored: Premium rounded look
 
     // Draw Segments
     for (int i = 0; i < segments; i++) {
@@ -2523,36 +2374,28 @@ class _GaugeChartPainter extends CustomPainter {
         final paint = Paint()
           ..color = colors[i]
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 12
+          ..strokeWidth = 10
           ..strokeCap = StrokeCap.round;
         
         canvas.drawArc(rect, start, fillAngle, false, paint);
       }
     }
 
-    // Inner Dotted Arch
-    final innerRadius = radius - 20;
-    final dotPaint = Paint()
-      ..color = Colors.white.withOpacity(0.12) // Slightly more subtle
-      ..style = PaintingStyle.fill;
-
-    const dotsCount = 50; // Increased count for smoother curve
-    const dotGap = totalAngle / dotsCount;
-
-    for (int i = 0; i <= dotsCount; i++) {
-      final angle = 3.14159 + (i * dotGap);
-      final offset = Offset(
-        center.dx + innerRadius * cos(angle),
-        center.dy + innerRadius * sin(angle),
-      );
-      canvas.drawCircle(offset, 0.7, dotPaint); // Finer dots
+    // Accurate mapping: percentage to segments + gaps
+    int fullSegments = (percentage * segments).floor();
+    double fractional = (percentage * segments) - fullSegments;
+    if (fullSegments == segments) {
+      fullSegments = segments - 1;
+      fractional = 1.0;
     }
+    
+    final handleAngleValue = 3.14159 + 
+        (fullSegments * (segmentAngle + gap)) + 
+        (fractional * segmentAngle);
 
-    // Indicator handle
-    final angle = 3.14159 + (totalAngle * percentage);
     final handlePos = Offset(
-      center.dx + radius * cos(angle),
-      center.dy + radius * sin(angle),
+      center.dx + radius * cos(handleAngleValue),
+      center.dy + radius * sin(handleAngleValue),
     );
 
     // Handle Glow
@@ -2560,13 +2403,13 @@ class _GaugeChartPainter extends CustomPainter {
     final glowPaint = Paint()
       ..color = color.withOpacity(0.4)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawCircle(handlePos, 12, glowPaint);
+    canvas.drawCircle(handlePos, 10, glowPaint);
 
-    // Handle White Outer
-    canvas.drawCircle(handlePos, 9, Paint()..color = Colors.white);
+    // Handle Luxury White Outer
+    canvas.drawCircle(handlePos, 8, Paint()..color = Colors.white);
     
     // Handle Colored Center
-    canvas.drawCircle(handlePos, 6, Paint()..color = color);
+    canvas.drawCircle(handlePos, 5, Paint()..color = color);
   }
 
   Color _getColorForPercentage(double p) {

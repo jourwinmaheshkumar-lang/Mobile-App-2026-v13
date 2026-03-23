@@ -68,10 +68,12 @@ class _FormFillerScreenState extends State<FormFillerScreen> {
     final isAdmin = _currentUser != null && (_currentUser!.role == UserRole.admin || _currentUser!.role == UserRole.officeTeam);
 
     if (widget.form.allowProxySubmission || isAdmin) {
-      _allDirectors = _directorRepo.all;
+      _allDirectors = List<Director>.from(_directorRepo.all)
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       if (_allDirectors.isEmpty) {
         await _directorRepo.loadAll();
-        _allDirectors = _directorRepo.all;
+        _allDirectors = List<Director>.from(_directorRepo.all)
+          ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       }
     }
 

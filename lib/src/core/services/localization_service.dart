@@ -103,7 +103,7 @@ class LocalizationService extends ChangeNotifier {
 
       // Directors Screen
       'all_directors': 'All Directors',
-      'records_found': 'records found',
+      'records_found': 'Records Found',
       'search_directors': 'Search directors...',
       'add_director': 'Add Director',
       'edit_director': 'Edit Director',

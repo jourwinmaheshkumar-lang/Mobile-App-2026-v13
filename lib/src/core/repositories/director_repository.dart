@@ -239,6 +239,11 @@ class DirectorRepository {
       removedAt: removedAt,
       fingerprintTemplate: data['fingerprintTemplate'],
       companies: companies,
+      officeId: data['officeId'],
+      officeName: data['officeName'],
+      officePosting: data['officePosting'],
+      isSpecial: data['isSpecial'] ?? false,
+      specialRole: data['specialRole'],
     );
   }
 
@@ -268,7 +273,11 @@ class DirectorRepository {
       'removedAt': d.removedAt != null ? Timestamp.fromDate(d.removedAt!) : null,
       'fingerprintTemplate': d.fingerprintTemplate,
       'companies': d.companies.map((c) => c.toMap()).toList(),
+      'officeId': d.officeId,
+      'officeName': d.officeName,
+      'officePosting': d.officePosting,
+      'isSpecial': d.isSpecial,
+      'specialRole': d.specialRole,
     };
   }
 }
-

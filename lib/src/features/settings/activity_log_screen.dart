@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../core/services/localization_service.dart';
 import '../../core/services/activity_log_service.dart';
 import '../../core/models/activity_log.dart';
+import 'package:intl/intl.dart';
 
 class ActivityLogScreen extends StatelessWidget {
   const ActivityLogScreen({super.key});
@@ -28,39 +29,57 @@ class ActivityLogScreen extends StatelessWidget {
 
   Widget _buildAppBar(BuildContext context, bool isDark) {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: 140,
       pinned: true,
-      stretch: true,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       elevation: 0,
+      backgroundColor: AppTheme.primary,
       leading: IconButton(
-        icon: Icon(
-          Icons.arrow_back_ios_new_rounded,
-          color: isDark ? Colors.white : AppTheme.textPrimary,
-          size: 20,
-        ),
+        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground],
-        centerTitle: false,
-        titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
-        title: Text(
-          localizationService.tr('activity_log'),
-          style: TextStyle(
-            color: isDark ? Colors.white : AppTheme.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -20,
+                  top: 20,
+                  child: Opacity(
+                    opacity: 0.1,
+                    child: Icon(Icons.history_rounded, size: 100, color: Colors.white),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 56),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      Text(
+                        localizationService.tr('activity_log'),
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
       actions: [
         IconButton(
-          icon: Icon(
-            Icons.delete_sweep_outlined,
-            color: isDark ? Colors.white70 : AppTheme.textSecondary,
-          ),
+          icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
           onPressed: () => _confirmClearLogs(context),
         ),
         const SizedBox(width: 8),
@@ -128,14 +147,14 @@ class ActivityLogScreen extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 16, 8, 12),
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
       child: Text(
         label.toUpperCase(),
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: isDark ? AppTheme.darkTextTertiary : AppTheme.textTertiary,
-          letterSpacing: 1.2,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.textSecondary,
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -180,11 +199,11 @@ class ActivityLogScreen extends StatelessWidget {
                     children: [
                       Text(
                         _getEntityLabel(log.entityType),
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 10,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           color: color,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.8,
                         ),
                       ),
                       Text(
@@ -199,7 +218,7 @@ class ActivityLogScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   RichText(
                     text: TextSpan(
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 14,
                         color: isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary,
                         height: 1.4,
@@ -207,12 +226,13 @@ class ActivityLogScreen extends StatelessWidget {
                       children: [
                         TextSpan(
                           text: '${log.entityName} ',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                         TextSpan(
                           text: log.details.toLowerCase(),
                           style: TextStyle(
                             color: isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -221,7 +241,7 @@ class ActivityLogScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'by ${log.userId}',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       color: isDark ? AppTheme.darkTextTertiary : AppTheme.textTertiary,
                       fontStyle: FontStyle.italic,
@@ -286,6 +306,7 @@ class ActivityLogScreen extends StatelessWidget {
       case EntityType.campaign: return 'CAMPAIGN';
       case EntityType.system: return 'SYSTEM';
       case EntityType.form: return 'FORM';
+      case EntityType.project: return 'PROJECT';
     }
   }
 
